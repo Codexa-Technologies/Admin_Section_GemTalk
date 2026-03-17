@@ -20,7 +20,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/admin', require('./routes/authRoutes'));
+app.use('/api/users', require('./routes/userAuthRoutes'));
 app.use('/api/articles', require('./routes/articleRoutes'));
+app.use('/api/news', require('./routes/newsRoutes'));
+app.use('/api/research', require('./routes/researchRoutes'));
+
+// Public routes (no authentication required)
+app.use('/api/public/articles', require('./routes/publicArticleRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

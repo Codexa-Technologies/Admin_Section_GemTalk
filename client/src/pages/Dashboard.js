@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardStats } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Toast from '../components/Toast';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
 } from 'recharts';
@@ -42,6 +43,19 @@ const IconList = () => (
     <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
     <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
     <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+  </svg>
+);
+
+const IconNews = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+    <line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/>
+  </svg>
+);
+const IconResearch = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
   </svg>
 );
 
@@ -102,42 +116,23 @@ const Dashboard = () => {
   if (loading) return <div className="dashboard-loading">Loading dashboard...</div>;
 
   const statCards = [
-    {
-      label: 'Total Articles',
-      value: stats?.totalArticles ?? 0,
-      icon: <IconArticles />,
-      color: 'teal',
-    },
-    {
-      label: 'Added This Month',
-      value: stats?.thisMonth ?? 0,
-      icon: <IconMonth />,
-      color: 'navy',
-    },
-    {
-      label: 'Total Storage',
-      value: formatStorage(stats?.totalStorageBytes),
-      icon: <IconStorage />,
-      color: 'teal',
-    },
-    {
-      label: 'Last Upload',
-      value: formatDate(stats?.lastUpload),
-      icon: <IconClock />,
-      color: 'navy',
-      small: true,
-    },
+    { label: 'Total Articles',    value: stats?.totalArticles ?? 0,              icon: <IconArticles />, color: 'teal' },
+    { label: 'Latest News',       value: stats?.newsCount ?? 0,                  icon: <IconNews />,     color: 'navy' },
+    { label: 'Research Papers',   value: stats?.researchCount ?? 0,              icon: <IconResearch />, color: 'teal' },
+    { label: 'Added This Month',  value: stats?.thisMonth ?? 0,                  icon: <IconMonth />,    color: 'navy' },
+    { label: 'Total Storage',     value: formatStorage(stats?.totalStorageBytes), icon: <IconStorage />, color: 'teal' },
+    { label: 'Last Upload',       value: formatDate(stats?.lastUpload),           icon: <IconClock />,   color: 'navy', small: true },
   ];
 
   return (
     <div className="dashboard">
+      <Toast message={error} type="error" onClose={() => setError('')} />
+
       {/* Page Header */}
       <div className="page-header">
         <h1>Welcome back, {admin?.name?.split(' ')[0] || 'Admin'}</h1>
         <p>Here is an overview of your knowledge base.</p>
       </div>
-
-      {error && <div className="error-message">{error}</div>}
 
       {/* Stat Cards */}
       <div className="stats-row">
@@ -157,15 +152,22 @@ const Dashboard = () => {
         <button className="quick-action-btn quick-action-btn--primary" onClick={() => navigate('/add-article')}>
           <span className="qa-icon"><IconAdd /></span>
           <div>
-            <div className="qa-title">Add New Article</div>
-            <div className="qa-sub">Upload a new PDF to the knowledge base</div>
+            <div className="qa-title">Add Article</div>
+            <div className="qa-sub">Upload a general PDF article</div>
           </div>
         </button>
-        <button className="quick-action-btn quick-action-btn--secondary" onClick={() => navigate('/manage-articles')}>
-          <span className="qa-icon"><IconList /></span>
+        <button className="quick-action-btn quick-action-btn--news" onClick={() => navigate('/add-news')}>
+          <span className="qa-icon"><IconNews /></span>
           <div>
-            <div className="qa-title">View All Articles</div>
-            <div className="qa-sub">Browse, edit and manage articles</div>
+            <div className="qa-title">Add Latest News</div>
+            <div className="qa-sub">Publish a news article</div>
+          </div>
+        </button>
+        <button className="quick-action-btn quick-action-btn--research" onClick={() => navigate('/add-research')}>
+          <span className="qa-icon"><IconResearch /></span>
+          <div>
+            <div className="qa-title">Add Research Paper</div>
+            <div className="qa-sub">Upload a research paper</div>
           </div>
         </button>
       </div>
@@ -216,7 +218,10 @@ const Dashboard = () => {
                       <div className="activity-title">{article.title}</div>
                       <div className="activity-meta">
                         <span>{formatDateTime(article.createdAt)}</span>
-                        <span className="activity-size">{(article.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                        <span className={`type-badge type-badge--${article.type || 'article'}`}>
+                          {article.type === 'research' ? 'Research' : article.type === 'article' ? 'Article' : 'News'}
+                        </span>
+                        {article.fileSize ? <span className="activity-size">{(article.fileSize / 1024 / 1024).toFixed(2)} MB</span> : null}
                       </div>
                       <div className="activity-user">Uploaded by {admin?.name || 'Admin'}</div>
                     </div>

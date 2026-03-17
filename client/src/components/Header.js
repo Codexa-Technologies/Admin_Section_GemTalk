@@ -4,9 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/components.css';
 
 const pageTitles = {
-  '/dashboard':       'Dashboard',
-  '/add-article':     'Add Article',
-  '/manage-articles': 'Manage Articles',
+  '/dashboard':        'Dashboard',
+  '/add-article':      'Add Article',
+  '/add-news':         'Add Latest News',
+  '/add-research':     'Add Research Papers',
+  '/manage-articles':  'Manage Articles',
+  '/manage-news':      'Manage News',
+  '/manage-research':  'Manage Research Papers',
 };
 
 const TopBar = () => {

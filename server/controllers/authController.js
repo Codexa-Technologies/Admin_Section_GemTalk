@@ -1,22 +1,16 @@
 const Admin = require('../models/Admin');
 const generateToken = require('../utils/generateToken');
 
-// @desc    Login admin
-// @route   POST /api/admin/login
-// @access  Public
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate email and password
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: 'Please provide email and password',
       });
     }
-
-    // Check for admin (select password since it's not selected by default)
     const admin = await Admin.findOne({ email }).select('+password');
 
     if (!admin) {
@@ -25,8 +19,6 @@ exports.login = async (req, res) => {
         message: 'Invalid credentials',
       });
     }
-
-    // Check password
     const isMatch = await admin.matchPassword(password);
 
     if (!isMatch) {
@@ -35,8 +27,6 @@ exports.login = async (req, res) => {
         message: 'Invalid credentials',
       });
     }
-
-    // Generate token
     const token = generateToken(admin._id);
 
     // Return response

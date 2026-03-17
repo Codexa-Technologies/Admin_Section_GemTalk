@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getArticles, deleteArticle, bulkDeleteArticles } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import EditArticleModal from '../components/EditArticleModal';
+import Toast from '../components/Toast';
 import '../styles/manage-articles.css';
 
 /* ── Icons ─────────────────────────────────────────── */
@@ -54,6 +55,11 @@ const FileIcon = () => (
 /* ── Helpers ────────────────────────────────────────── */
 const fmtDate  = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 const fmtSize  = b => b ? `${(b / 1024 / 1024).toFixed(2)} MB` : '—';
+const getTypeLabel = (type) => {
+  if (type === 'research') return 'Research';
+  if (type === 'article') return 'Article';
+  return 'News';
+};
 
 const SORT_OPTIONS = [
   { value: 'createdAt', label: 'Upload Date' },
@@ -62,7 +68,7 @@ const SORT_OPTIONS = [
 ];
 
 /* ── Component ──────────────────────────────────────── */
-const ManageArticlesPage = () => {
+const ManageArticlesPage = ({ defaultType = '' }) => {
   const [articles,      setArticles]      = useState([]);
   const [totalPages,    setTotalPages]    = useState(1);
   const [totalCount,    setTotalCount]    = useState(0);
@@ -77,6 +83,7 @@ const ManageArticlesPage = () => {
   const [selected,      setSelected]      = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState('');
+  const [success,       setSuccess]       = useState('');
   const [editingArticle,setEditingArticle]= useState(null);
   const { token } = useAuth();
   const ITEMS_PER_PAGE = 10;
@@ -84,7 +91,7 @@ const ManageArticlesPage = () => {
   const fetchArticles = useCallback(async () => {
     try {
       setLoading(true); setError(''); setSelected([]);
-      const res = await getArticles(token, currentPage, ITEMS_PER_PAGE, search, sortField, sortOrder, dateFrom, dateTo);
+      const res = await getArticles(token, currentPage, ITEMS_PER_PAGE, search, sortField, sortOrder, dateFrom, dateTo, defaultType || 'article');
       if (res.success) {
         setArticles(res.articles);
         setTotalPages(res.pagination.totalPages);
@@ -95,7 +102,7 @@ const ManageArticlesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [token, currentPage, search, sortField, sortOrder, dateFrom, dateTo]);
+  }, [token, currentPage, search, sortField, sortOrder, dateFrom, dateTo, defaultType]);
 
   useEffect(() => { fetchArticles(); }, [fetchArticles]);
 
@@ -125,22 +132,32 @@ const ManageArticlesPage = () => {
   const toggleSelect = (id) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   const toggleSelectAll = () => setSelected(selected.length === articles.length ? [] : articles.map(a => a._id));
 
+  const label = defaultType === 'news' ? 'news article' : defaultType === 'research' ? 'research paper' : 'article';
+  const labelPlural = defaultType === 'news' ? 'news articles' : defaultType === 'research' ? 'research papers' : 'articles';
+
   /* Single delete */
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this article?')) return;
+    if (!window.confirm(`Are you sure you want to delete this ${label}?`)) return;
     try {
-      const res = await deleteArticle(token, id);
-      if (res.success) { setArticles(p => p.filter(a => a._id !== id)); setTotalCount(c => c - 1); }
+      const res = await deleteArticle(token, id, defaultType || 'article');
+      if (res.success) {
+        setArticles(p => p.filter(a => a._id !== id));
+        setTotalCount(c => c - 1);
+        setSuccess(`${label} deleted successfully`);
+      }
       else setError(res.message || 'Failed to delete');
     } catch (err) { setError(err.message || 'Failed to delete'); }
   };
 
   /* Bulk delete */
   const handleBulkDelete = async () => {
-    if (!window.confirm(`Delete ${selected.length} selected article(s)?`)) return;
+    if (!window.confirm(`Delete ${selected.length} selected ${label}(s)?`)) return;
     try {
-      const res = await bulkDeleteArticles(token, selected);
-      if (res.success) { fetchArticles(); }
+      const res = await bulkDeleteArticles(token, selected, defaultType || 'article');
+      if (res.success) {
+        setSuccess(`${selected.length} ${label}(s) deleted`);
+        fetchArticles();
+      }
       else setError(res.message || 'Bulk delete failed');
     } catch (err) { setError(err.message || 'Bulk delete failed'); }
   };
@@ -155,6 +172,7 @@ const ManageArticlesPage = () => {
   const TableRow = ({ article, idx }) => {
     const isExpanded = expandedRow === article._id;
     const isSelected = selected.includes(article._id);
+    const itemType = defaultType || article.type || 'article';
     return (
       <>
         <tr className={`${isSelected ? 'row-selected' : ''}${isExpanded ? ' row-expanded' : ''}`}>
@@ -177,15 +195,24 @@ const ManageArticlesPage = () => {
           <td className="date-cell">{fmtDate(article.createdAt)}</td>
           <td className="date-cell">{fmtDate(article.publishedDate)}</td>
           <td className="size-cell">{fmtSize(article.fileSize)}</td>
+          <td>
+            <span className={`type-badge type-badge--${itemType}`}>
+              {getTypeLabel(itemType)}
+            </span>
+          </td>
           <td className="actions-cell">
-            <button className="act-btn act-view"   onClick={() => window.open(`http://localhost:5000${article.pdf}`, '_blank')}>View</button>
+            {article.pdf ? (
+              <button className="act-btn act-view" onClick={() => window.open(`http://localhost:5000${article.pdf}`, '_blank')}>View</button>
+            ) : (
+              <button className="act-btn" disabled>No PDF</button>
+            )}
             <button className="act-btn act-edit"   onClick={() => setEditingArticle(article)}>Edit</button>
             <button className="act-btn act-delete" onClick={() => handleDelete(article._id)}>Delete</button>
           </td>
         </tr>
         {isExpanded && (
           <tr className="expanded-row">
-            <td colSpan={8}>
+            <td colSpan={9}>
               <div className="expanded-content">
                 <div className="expanded-label">Description</div>
                 <div className="expanded-text">{article.description}</div>
@@ -201,6 +228,7 @@ const ManageArticlesPage = () => {
   const CardItem = ({ article, idx }) => {
     const isSelected = selected.includes(article._id);
     const isExpanded = expandedRow === article._id;
+    const itemType = defaultType || article.type || 'article';
     return (
       <div className={`article-card${isSelected ? ' article-card--selected' : ''}`}>
         <div className="article-card-top">
@@ -209,6 +237,9 @@ const ManageArticlesPage = () => {
             <span className="card-num">#{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</span>
           </div>
           <div className="card-chips">
+            <span className={`type-badge type-badge--${itemType}`}>
+              {getTypeLabel(itemType)}
+            </span>
             <span className="chip-size">{fmtSize(article.fileSize)}</span>
           </div>
         </div>
@@ -240,7 +271,11 @@ const ManageArticlesPage = () => {
         )}
 
         <div className="article-card-actions">
-          <button className="act-btn act-view"   onClick={() => window.open(`http://localhost:5000${article.pdf}`, '_blank')}>View</button>
+          {article.pdf ? (
+            <button className="act-btn act-view" onClick={() => window.open(`http://localhost:5000${article.pdf}`, '_blank')}>View</button>
+          ) : (
+            <button className="act-btn" disabled>No PDF</button>
+          )}
           <button className="act-btn act-edit"   onClick={() => setEditingArticle(article)}>Edit</button>
           <button className="act-btn act-delete" onClick={() => handleDelete(article._id)}>Delete</button>
         </div>
@@ -252,7 +287,8 @@ const ManageArticlesPage = () => {
 
   return (
     <div className="manage-page">
-      {error && <div className="error-message">{error}</div>}
+      <Toast message={error} type="error" onClose={() => setError('')} />
+      <Toast message={success} type="success" onClose={() => setSuccess('')} />
 
       {/* ── Toolbar ── */}
       <div className="manage-toolbar">
@@ -298,7 +334,7 @@ const ManageArticlesPage = () => {
       {/* ── Bulk Action Bar ── */}
       {selected.length > 0 && (
         <div className="bulk-bar">
-          <span className="bulk-count">{selected.length} article{selected.length > 1 ? 's' : ''} selected</span>
+          <span className="bulk-count">{selected.length} {label}{selected.length > 1 ? 's' : ''} selected</span>
           <button className="bulk-delete-btn" onClick={handleBulkDelete}>
             <TrashIcon /> Delete Selected
           </button>
@@ -308,13 +344,13 @@ const ManageArticlesPage = () => {
 
       {/* ── Stats strip ── */}
       <div className="stats-strip">
-        <span>Total: <strong>{totalCount}</strong> articles</span>
+        <span>Total: <strong>{totalCount}</strong> {labelPlural}</span>
         {hasFilters && <span className="filter-badge">Filtered results</span>}
       </div>
 
       {/* ── Content ── */}
       {loading ? (
-        <div className="loading-state">Loading articles...</div>
+        <div className="loading-state">Loading {labelPlural}...</div>
       ) : articles.length > 0 ? (
         <>
           {viewMode === 'table' ? (
@@ -331,6 +367,7 @@ const ManageArticlesPage = () => {
                     <th>Upload Date <SortBtn field="createdAt" /></th>
                     <th>Published Date</th>
                     <th>Size <SortBtn field="fileSize" /></th>
+                    <th>Type</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -358,7 +395,7 @@ const ManageArticlesPage = () => {
         </>
       ) : (
         <div className="empty-state">
-          No articles found.{hasFilters && ' Try clearing the filters.'}
+          No {labelPlural} found.{hasFilters && ' Try clearing the filters.'}
         </div>
       )}
 

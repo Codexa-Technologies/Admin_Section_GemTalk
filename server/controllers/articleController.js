@@ -1,255 +1,196 @@
 const Article = require('../models/Article');
+const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const path = require('path');
 
-// @desc    Get all articles with pagination and search
-// @route   GET /api/articles
-// @access  Private
+// Upload image buffer to Cloudinary
+const uploadImageToCloudinary = (buffer, folder = 'gemtalk/articles') => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'image' },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+const deleteCloudinaryImage = async (publicId) => {
+  if (!publicId) return;
+  try { await cloudinary.uploader.destroy(publicId); } catch (e) { console.log('Cloudinary delete error:', e.message); }
+};
+
+const deleteLocalFile = (filePath) => {
+  if (!filePath) return;
+  const full = path.join(__dirname, '../' + filePath);
+  fs.unlink(full, () => {});
+};
+
+// ── GET all articles (admin) ──────────────────────────
 exports.getArticles = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const search = req.query.search || '';
+    const page      = parseInt(req.query.page)  || 1;
+    const limit     = parseInt(req.query.limit) || 10;
+    const search    = req.query.search    || '';
     const sortField = req.query.sortField || 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-    const dateFrom = req.query.dateFrom;
-    const dateTo = req.query.dateTo;
+    const dateFrom  = req.query.dateFrom;
+    const dateTo    = req.query.dateTo;
+    const skip      = (page - 1) * limit;
 
-    const skip = (page - 1) * limit;
-
-    // Build filter
     let filter = { admin: req.user.id };
-
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
-    }
-
+    if (search) filter.$or = [{ title: { $regex: search, $options: 'i' } }, { description: { $regex: search, $options: 'i' } }];
     if (dateFrom || dateTo) {
       filter.createdAt = {};
       if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
-      if (dateTo) {
-        const to = new Date(dateTo);
-        to.setHours(23, 59, 59, 999);
-        filter.createdAt.$lte = to;
-      }
+      if (dateTo) { const to = new Date(dateTo); to.setHours(23,59,59,999); filter.createdAt.$lte = to; }
     }
+    if (req.query.type) filter.type = req.query.type;
 
-    const allowedSortFields = { createdAt: 'createdAt', title: 'title', fileSize: 'fileSize' };
-    const sortBy = allowedSortFields[sortField] || 'createdAt';
+    const allowedSort = { createdAt: 'createdAt', title: 'title', fileSize: 'fileSize' };
+    const sortBy = allowedSort[sortField] || 'createdAt';
 
-    // Get total count for pagination
     const totalCount = await Article.countDocuments(filter);
-    const totalPages = Math.ceil(totalCount / limit);
+    const articles   = await Article.find(filter).select('-admin').sort({ [sortBy]: sortOrder }).skip(skip).limit(limit);
 
-    // Get articles
-    const articles = await Article.find(filter)
-      .select('-admin')
-      .sort({ [sortBy]: sortOrder })
-      .skip(skip)
-      .limit(limit);
-
-    res.status(200).json({
-      success: true,
-      articles,
-      pagination: {
-        totalCount,
-        totalPages,
-        currentPage: page,
-        limit,
-      },
-    });
+    res.status(200).json({ success: true, articles, pagination: { totalCount, totalPages: Math.ceil(totalCount / limit), currentPage: page, limit } });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Get single article
-// @route   GET /api/articles/:id
-// @access  Private
+// ── GET single article (admin) ────────────────────────
 exports.getArticle = async (req, res) => {
   try {
     const article = await Article.findById(req.params.id);
-
-    if (!article) {
-      return res.status(404).json({
-        success: false,
-        message: 'Article not found',
-      });
-    }
-
-    // Check if article belongs to logged in admin
-    if (article.admin.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to view this article',
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: article,
-    });
+    if (!article) return res.status(404).json({ success: false, message: 'Article not found' });
+    if (article.admin.toString() !== req.user.id) return res.status(403).json({ success: false, message: 'Not authorized' });
+    res.status(200).json({ success: true, data: article });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Create new article
-// @route   POST /api/articles
-// @access  Private
+// ── CREATE article ────────────────────────────────────
 exports.createArticle = async (req, res) => {
+  const pdfFile   = req.files?.pdf?.[0];
+  const imageFile = req.files?.image?.[0];
+  let imageUrl = null, imagePublicId = null;
+
   try {
-    const { title, description } = req.body;
+    const { title, description, type = 'news' } = req.body;
 
-    // Validate inputs
     if (!title || !description) {
-      // Delete uploaded file if validation fails
-      if (req.file) {
-        fs.unlink(req.file.path, (err) => {
-          if (err) console.log(err);
-        });
-      }
-
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide title and description',
-      });
+      if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+      return res.status(400).json({ success: false, message: 'Please provide title and description' });
     }
 
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please upload a PDF file',
-      });
+    // news type doesn't require PDF
+    if (type !== 'news' && !pdfFile) {
+      return res.status(400).json({ success: false, message: 'Please upload a PDF file' });
     }
 
-    // Create article
+    // Upload image to Cloudinary if provided
+    if (imageFile?.buffer) {
+      const result = await uploadImageToCloudinary(imageFile.buffer);
+      imageUrl = result.secure_url;
+      imagePublicId = result.public_id;
+    }
+
     const article = await Article.create({
       title,
       description,
-      pdf: `/uploads/articles/${req.file.filename}`,
-      fileName: req.file.originalname,
-      fileSize: req.file.size,
+      pdf:           pdfFile ? `/uploads/articles/${pdfFile.filename}` : null,
+      fileName:      pdfFile ? pdfFile.originalname : null,
+      fileSize:      pdfFile ? pdfFile.size : null,
+      image:         imageUrl,
+      imagePublicId,
+      type,
       publishedDate: req.body.publishedDate ? new Date(req.body.publishedDate) : null,
-      admin: req.user.id,
+      admin:         req.user.id,
     });
 
-    res.status(201).json({
-      success: true,
-      data: article,
-    });
+    res.status(201).json({ success: true, data: article });
   } catch (error) {
-    // Delete uploaded file if article creation fails
-    if (req.file) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.log(err);
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+    if (imagePublicId) await deleteCloudinaryImage(imagePublicId);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Update article
-// @route   PUT /api/articles/:id
-// @access  Private
+// ── UPDATE article ────────────────────────────────────
 exports.updateArticle = async (req, res) => {
+  const pdfFile   = req.files?.pdf?.[0];
+  const imageFile = req.files?.image?.[0];
+
   try {
     let article = await Article.findById(req.params.id);
-
     if (!article) {
-      if (req.file) {
-        fs.unlink(req.file.path, (err) => {
-          if (err) console.log(err);
-        });
-      }
-
-      return res.status(404).json({
-        success: false,
-        message: 'Article not found',
-      });
+      if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+      return res.status(404).json({ success: false, message: 'Article not found' });
     }
-
-    // Check if article belongs to logged in admin
     if (article.admin.toString() !== req.user.id) {
-      if (req.file) {
-        fs.unlink(req.file.path, (err) => {
-          if (err) console.log(err);
-        });
-      }
-
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to update this article',
-      });
+      if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+      return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    // Update basic fields
-    if (req.body.title) article.title = req.body.title;
+    if (req.body.title)       article.title       = req.body.title;
     if (req.body.description) article.description = req.body.description;
+    if (req.body.type)        article.type        = req.body.type;
     if (req.body.publishedDate !== undefined) article.publishedDate = req.body.publishedDate ? new Date(req.body.publishedDate) : null;
 
-    // If new file is uploaded, delete old file and update
-    if (req.file) {
-      const oldFilePath = path.join(__dirname, '../' + article.pdf);
-      fs.unlink(oldFilePath, (err) => {
-        if (err) console.log(err);
-      });
+    if (pdfFile) {
+      deleteLocalFile(article.pdf);
+      article.pdf      = `/uploads/articles/${pdfFile.filename}`;
+      article.fileName = pdfFile.originalname;
+      article.fileSize = pdfFile.size;
+    }
 
-      article.pdf = `/uploads/articles/${req.file.filename}`;
-      article.fileName = req.file.originalname;
-      article.fileSize = req.file.size;
+    if (imageFile?.buffer) {
+      await deleteCloudinaryImage(article.imagePublicId);
+      const result = await uploadImageToCloudinary(imageFile.buffer);
+      article.image         = result.secure_url;
+      article.imagePublicId = result.public_id;
     }
 
     article = await article.save();
-
-    res.status(200).json({
-      success: true,
-      data: article,
-    });
+    res.status(200).json({ success: true, data: article });
   } catch (error) {
-    if (req.file) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.log(err);
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Bulk delete articles
-// @route   DELETE /api/articles/bulk
-// @access  Private
+// ── DELETE article ────────────────────────────────────
+exports.deleteArticle = async (req, res) => {
+  try {
+    const article = await Article.findById(req.params.id);
+    if (!article) return res.status(404).json({ success: false, message: 'Article not found' });
+    if (article.admin.toString() !== req.user.id) return res.status(403).json({ success: false, message: 'Not authorized' });
+
+    deleteLocalFile(article.pdf);
+    await deleteCloudinaryImage(article.imagePublicId);
+    await Article.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ success: true, message: 'Article deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ── BULK DELETE ───────────────────────────────────────
 exports.bulkDeleteArticles = async (req, res) => {
   try {
     const { ids } = req.body;
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ success: false, message: 'No article IDs provided' });
-    }
+    if (!ids?.length) return res.status(400).json({ success: false, message: 'No article IDs provided' });
 
     const articles = await Article.find({ _id: { $in: ids }, admin: req.user.id });
-
-    for (const article of articles) {
-      const filePath = path.join(__dirname, '../' + article.pdf);
-      fs.unlink(filePath, (err) => { if (err) console.log(err); });
+    for (const a of articles) {
+      deleteLocalFile(a.pdf);
+      await deleteCloudinaryImage(a.imagePublicId);
     }
-
     await Article.deleteMany({ _id: { $in: ids }, admin: req.user.id });
 
     res.status(200).json({ success: true, message: `${articles.length} articles deleted` });
@@ -258,9 +199,7 @@ exports.bulkDeleteArticles = async (req, res) => {
   }
 };
 
-// @desc    Get dashboard stats
-// @route   GET /api/articles/stats
-// @access  Private
+// ── DASHBOARD STATS ───────────────────────────────────
 exports.getDashboardStats = async (req, res) => {
   try {
     const adminId = req.user.id;
@@ -275,10 +214,14 @@ exports.getDashboardStats = async (req, res) => {
         { $group: { _id: null, total: { $sum: '$fileSize' } } },
       ]),
       Article.findOne({ admin: adminId }).sort({ createdAt: -1 }).select('createdAt title'),
-      Article.find({ admin: adminId }).sort({ createdAt: -1 }).limit(5).select('title fileName fileSize createdAt'),
+      Article.find({ admin: adminId }).sort({ createdAt: -1 }).limit(5).select('title fileName fileSize createdAt type'),
     ]);
 
-    // Monthly uploads for last 6 months
+    const [newsCount, researchCount] = await Promise.all([
+      Article.countDocuments({ admin: adminId, type: 'news' }),
+      Article.countDocuments({ admin: adminId, type: 'research' }),
+    ]);
+
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
     const monthlyRaw = await Article.aggregate([
       { $match: { admin: require('mongoose').Types.ObjectId.createFromHexString(adminId), createdAt: { $gte: sixMonthsAgo } } },
@@ -296,59 +239,46 @@ exports.getDashboardStats = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      stats: {
-        totalArticles: totalCount,
-        thisMonth: thisMonthCount,
-        totalStorageBytes: storageResult[0]?.total || 0,
-        lastUpload: lastArticle?.createdAt || null,
-        recentArticles: recent,
-        monthlyData,
-      },
+      stats: { totalArticles: totalCount, thisMonth: thisMonthCount, newsCount, researchCount, totalStorageBytes: storageResult[0]?.total || 0, lastUpload: lastArticle?.createdAt || null, recentArticles: recent, monthlyData },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Delete article
-// @route   DELETE /api/articles/:id
-// @access  Private
-exports.deleteArticle = async (req, res) => {
+// ── PUBLIC: GET all articles ──────────────────────────
+exports.getPublicArticles = async (req, res) => {
   try {
-    const article = await Article.findById(req.params.id);
+    const page      = parseInt(req.query.page)  || 1;
+    const limit     = parseInt(req.query.limit) || 12;
+    const search    = req.query.search    || '';
+    const sortField = req.query.sortField || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const skip      = (page - 1) * limit;
 
-    if (!article) {
-      return res.status(404).json({
-        success: false,
-        message: 'Article not found',
-      });
-    }
+    let filter = {};
+    if (req.query.type) filter.type = req.query.type;
+    if (search) filter.$or = [{ title: { $regex: search, $options: 'i' } }, { description: { $regex: search, $options: 'i' } }];
 
-    // Check if article belongs to logged in admin
-    if (article.admin.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to delete this article',
-      });
-    }
+    const allowedSort = { createdAt: 'createdAt', title: 'title' };
+    const sortBy = allowedSort[sortField] || 'createdAt';
 
-    // Delete PDF file from server
-    const filePath = path.join(__dirname, '../' + article.pdf);
-    fs.unlink(filePath, (err) => {
-      if (err) console.log(err);
-    });
+    const totalCount = await Article.countDocuments(filter);
+    const articles   = await Article.find(filter).select('-admin -imagePublicId').sort({ [sortBy]: sortOrder }).skip(skip).limit(limit);
 
-    // Delete article from database
-    await Article.findByIdAndDelete(req.params.id);
-
-    res.status(200).json({
-      success: true,
-      message: 'Article deleted successfully',
-    });
+    res.status(200).json({ success: true, articles, pagination: { totalCount, totalPages: Math.ceil(totalCount / limit), currentPage: page, limit } });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ── PUBLIC: GET single article ────────────────────────
+exports.getPublicArticle = async (req, res) => {
+  try {
+    const article = await Article.findById(req.params.id).select('-admin -imagePublicId');
+    if (!article) return res.status(404).json({ success: false, message: 'Article not found' });
+    res.status(200).json({ success: true, data: article });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

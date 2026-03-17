@@ -1,5 +1,11 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
+const getContentBasePath = (contentType = 'article') => {
+  if (contentType === 'news') return 'news';
+  if (contentType === 'research') return 'research';
+  return 'articles';
+};
+
 // Admin Auth Services
 export const adminLogin = async (email, password) => {
   const response = await fetch(`${API_BASE_URL}/admin/login`, {
@@ -42,8 +48,9 @@ export const getDashboardStats = async (token) => {
   return await response.json();
 };
 
-export const getArticles = async (token, page = 1, limit = 10, search = '', sortField = 'createdAt', sortOrder = 'desc', dateFrom = '', dateTo = '') => {
-  let url = `${API_BASE_URL}/articles?page=${page}&limit=${limit}`;
+export const getArticles = async (token, page = 1, limit = 10, search = '', sortField = 'createdAt', sortOrder = 'desc', dateFrom = '', dateTo = '', typeFilter = 'article') => {
+  const basePath = getContentBasePath(typeFilter || 'article');
+  let url = `${API_BASE_URL}/${basePath}?page=${page}&limit=${limit}`;
   if (search)     url += `&search=${encodeURIComponent(search)}`;
   if (sortField)  url += `&sortField=${sortField}&sortOrder=${sortOrder}`;
   if (dateFrom)   url += `&dateFrom=${dateFrom}`;
@@ -54,8 +61,9 @@ export const getArticles = async (token, page = 1, limit = 10, search = '', sort
   return await response.json();
 };
 
-export const bulkDeleteArticles = async (token, ids) => {
-  const response = await fetch(`${API_BASE_URL}/articles/bulk`, {
+export const bulkDeleteArticles = async (token, ids, contentType = 'article') => {
+  const basePath = getContentBasePath(contentType);
+  const response = await fetch(`${API_BASE_URL}/${basePath}/bulk`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids }),
@@ -64,8 +72,9 @@ export const bulkDeleteArticles = async (token, ids) => {
   return await response.json();
 };
 
-export const getArticle = async (token, id) => {
-  const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+export const getArticle = async (token, id, contentType = 'article') => {
+  const basePath = getContentBasePath(contentType);
+  const response = await fetch(`${API_BASE_URL}/${basePath}/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -79,8 +88,9 @@ export const getArticle = async (token, id) => {
   return await response.json();
 };
 
-export const createArticle = async (token, formData) => {
-  const response = await fetch(`${API_BASE_URL}/articles`, {
+export const createArticle = async (token, formData, contentType = 'article') => {
+  const basePath = getContentBasePath(contentType);
+  const response = await fetch(`${API_BASE_URL}/${basePath}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -96,8 +106,9 @@ export const createArticle = async (token, formData) => {
   return await response.json();
 };
 
-export const updateArticle = async (token, id, formData) => {
-  const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+export const updateArticle = async (token, id, formData, contentType = 'article') => {
+  const basePath = getContentBasePath(contentType);
+  const response = await fetch(`${API_BASE_URL}/${basePath}/${id}`, {
     method: 'PUT',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -113,8 +124,9 @@ export const updateArticle = async (token, id, formData) => {
   return await response.json();
 };
 
-export const deleteArticle = async (token, id) => {
-  const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+export const deleteArticle = async (token, id, contentType = 'article') => {
+  const basePath = getContentBasePath(contentType);
+  const response = await fetch(`${API_BASE_URL}/${basePath}/${id}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,

@@ -34,7 +34,29 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <AddArticlePage />
+                  <AddArticlePage key="add-article" defaultType="article" />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/add-news"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AddArticlePage key="add-news" defaultType="news" />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/add-research"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AddArticlePage key="add-research" defaultType="research" />
                 </Layout>
               </ProtectedRoute>
             }
@@ -45,7 +67,29 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <ManageArticlesPage />
+                  <ManageArticlesPage defaultType="" />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manage-news"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ManageArticlesPage defaultType="news" />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manage-research"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ManageArticlesPage defaultType="research" />
                 </Layout>
               </ProtectedRoute>
             }

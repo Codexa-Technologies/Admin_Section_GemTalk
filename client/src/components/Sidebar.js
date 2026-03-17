@@ -11,9 +11,21 @@ const icons = {
       <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
     </svg>
   ),
-  add: (
+  addArticle: (
     <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+  ),
+  news: (
+    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+      <line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/>
+    </svg>
+  ),
+  research: (
+    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
     </svg>
   ),
   manage: (
@@ -30,10 +42,29 @@ const icons = {
   ),
 };
 
-const navItems = [
-  { path: '/dashboard',        label: 'Dashboard',        icon: icons.dashboard },
-  { path: '/add-article',      label: 'Add Article',      icon: icons.add },
-  { path: '/manage-articles',  label: 'Manage Articles',  icon: icons.manage },
+const navSections = [
+  {
+    label: 'Overview',
+    items: [
+      { path: '/dashboard', label: 'Dashboard', icon: icons.dashboard },
+    ],
+  },
+  {
+    label: 'Add Content',
+    items: [
+      { path: '/add-article',  label: 'Add Article',         icon: icons.addArticle },
+      { path: '/add-news',     label: 'Add Latest News',     icon: icons.news },
+      { path: '/add-research', label: 'Add Research Papers', icon: icons.research },
+    ],
+  },
+  {
+    label: 'Manage',
+    items: [
+      { path: '/manage-articles',  label: 'Manage Articles',        icon: icons.manage },
+      { path: '/manage-news',      label: 'Manage News',            icon: icons.news },
+      { path: '/manage-research',  label: 'Manage Research Papers', icon: icons.research },
+    ],
+  },
 ];
 
 const Sidebar = () => {
@@ -58,16 +89,20 @@ const Sidebar = () => {
       </div>
 
       <nav className="sidebar-nav">
-        <div className="nav-section-label">Main Menu</div>
-        {navItems.map(({ path, label, icon }) => (
-          <Link
-            key={path}
-            to={path}
-            className={`nav-link${location.pathname === path ? ' active' : ''}`}
-          >
-            {icon}
-            <span className="nav-text">{label}</span>
-          </Link>
+        {navSections.map(section => (
+          <div key={section.label}>
+            <div className="nav-section-label">{section.label}</div>
+            {section.items.map(({ path, label, icon }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`nav-link${location.pathname === path ? ' active' : ''}`}
+              >
+                {icon}
+                <span className="nav-text">{label}</span>
+              </Link>
+            ))}
+          </div>
         ))}
       </nav>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminLogin } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Toast from '../components/Toast';
 import '../styles/login.css';
 
 const LoginPage = () => {
@@ -59,7 +60,7 @@ const LoginPage = () => {
 
         {/* Form */}
         <div className="login-form-wrapper">
-          {error && <div className="error-message">{error}</div>}
+          <Toast message={error} type="error" onClose={() => setError('')} />
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">

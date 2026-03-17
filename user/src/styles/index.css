@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
+
+:root {
+	--brand-teal: #05878A;
+	--brand-deep: #074E67;
+	--brand-dark: #053447;
+	--surface: #f3fbfb;
+	--surface-alt: #e8f5f6;
+	--text-main: #0f2d35;
+	--text-soft: #4c6b74;
+	--white: #ffffff;
+	--shadow-soft: 0 10px 30px rgba(7, 78, 103, 0.16);
+	--shadow-card: 0 18px 35px rgba(7, 78, 103, 0.14);
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	font-family: 'Sora', sans-serif;
+	color: var(--text-main);
+	background: linear-gradient(180deg, #f7fdfd 0%, #edf8f9 100%);
+}
+
+a {
+	text-decoration: none;
+	color: inherit;
+}
+
+#home {
+	margin-top: 64px;
+}
+
+section {
+	animation: sectionFade 0.8s ease both;
+}
+
+@keyframes sectionFade {
+	from {
+		opacity: 0;
+		transform: translateY(18px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes floatSoft {
+	0%, 100% {
+		transform: translateY(0);
+	}
+
+	50% {
+		transform: translateY(-8px);
+	}
+}
+
+@keyframes fadeUp {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

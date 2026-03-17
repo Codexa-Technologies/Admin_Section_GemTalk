@@ -60,7 +60,90 @@ body {
   font-weight: 500;
 }
 
+.app-toast {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 3000;
+  min-width: 260px;
+  max-width: min(420px, calc(100vw - 36px));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  animation: toastSlideIn 0.2s ease-out;
+}
+
+.app-toast--error {
+  background: #fff5f5;
+  color: #9b1c1c;
+  border-left: 4px solid #e53e3e;
+}
+
+.app-toast--success {
+  background: #f0fff4;
+  color: #1f6f43;
+  border-left: 4px solid #2f855a;
+}
+
+.app-toast-text {
+  line-height: 1.4;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-toast-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.app-toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Type Badges (global) ───────────────────────────── */
+.type-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.type-badge--news {
+  background: rgba(5,135,138,0.1);
+  color: var(--teal);
+  border: 1px solid var(--teal-border);
+}
+
+.type-badge--research {
+  background: rgba(124,58,237,0.1);
+  color: #7c3aed;
+  border: 1px solid rgba(124,58,237,0.25);
 }

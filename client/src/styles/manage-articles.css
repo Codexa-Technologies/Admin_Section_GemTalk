@@ -569,3 +569,50 @@
   .articles-table th, .articles-table td { padding: 10px 10px; }
   .cards-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Type Filter Group ──────────────────────────────── */
+.type-filter-group {
+  display: flex;
+  gap: 4px;
+}
+
+.type-filter-btn {
+  padding: 7px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.type-filter-btn--active,
+.type-filter-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+
+.type-filter-btn--news.type-filter-btn--active   { background: rgba(5,135,138,0.12); border-color: var(--teal); color: var(--teal); }
+.type-filter-btn--research.type-filter-btn--active { background: rgba(7,78,103,0.1); border-color: var(--navy); color: var(--navy); }
+
+/* ── Type Badge ─────────────────────────────────────── */
+.type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.type-badge--news {
+  background: rgba(5,135,138,0.1);
+  color: var(--teal);
+  border: 1px solid var(--teal-border);
+}
+
+.type-badge--research {
+  background: rgba(7,78,103,0.1);
+  color: var(--navy);
+  border: 1px solid rgba(7,78,103,0.2);
+}
