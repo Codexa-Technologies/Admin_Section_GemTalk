@@ -37,6 +37,8 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       const skip      = (page - 1) * limit;
 
       let filter = { admin: req.user.id };
+      // allow filtering by type (news/event) for collections that have a `type` field
+      if (req.query.type) filter.type = req.query.type;
       if (search) filter.$or = [{ title: { $regex: search, $options: 'i' } }, { description: { $regex: search, $options: 'i' } }];
       if (dateFrom || dateTo) {
         filter.createdAt = {};
@@ -65,10 +67,13 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
   const create = async (req, res) => {
     const pdfFile   = hasPdf    ? req.files?.pdf?.[0]   : null;
     const imageFile = hasImage  ? req.files?.image?.[0] : null;
+    const imagesFiles = req.files?.images || null;
     let imageUrl = null, imagePublicId = null;
 
+    const uploadedImages = [];
+
     try {
-      const { title, description, publishedDate } = req.body;
+      const { title, description, publishedDate, downloadAvailable, type, eventDate, location } = req.body;
       if (!title || !description) {
         if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
         return res.status(400).json({ success: false, message: 'Please provide title and description' });
@@ -87,11 +92,27 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
         imagePublicId = result.public_id;
       }
 
+      if (imagesFiles && imagesFiles.length) {
+        for (const f of imagesFiles.slice(0, 5)) {
+          if (f?.buffer) {
+            const r = await uploadImageToCloudinary(f.buffer, folder);
+            uploadedImages.push({ url: r.secure_url, publicId: r.public_id, fileName: f.originalname, fileSize: f.size });
+          }
+        }
+      }
+
       const doc = {
-        title, description,
+        title,
+        description,
+        type: type || 'news',
         image: imageUrl,
         imagePublicId,
+        images: uploadedImages.length ? uploadedImages : undefined,
         publishedDate: publishedDate ? new Date(publishedDate) : null,
+        eventDate: eventDate ? new Date(eventDate) : null,
+        location: location || null,
+        // allow boolean string from FormData ('true'/'false')
+        ...(downloadAvailable !== undefined ? { downloadAvailable: downloadAvailable === 'true' || downloadAvailable === true } : {}),
         admin: req.user.id,
       };
       if (hasPdf && pdfFile) {
@@ -112,6 +133,7 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
   const update = async (req, res) => {
     const pdfFile   = hasPdf   ? req.files?.pdf?.[0]   : null;
     const imageFile = hasImage ? req.files?.image?.[0] : null;
+    const imagesFiles = req.files?.images || null;
 
     try {
       let item = await Model.findById(req.params.id);
@@ -127,6 +149,10 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       if (req.body.title)       item.title       = req.body.title;
       if (req.body.description) item.description = req.body.description;
       if (req.body.publishedDate !== undefined) item.publishedDate = req.body.publishedDate ? new Date(req.body.publishedDate) : null;
+      if (req.body.eventDate !== undefined) item.eventDate = req.body.eventDate ? new Date(req.body.eventDate) : null;
+      if (req.body.location !== undefined) item.location = req.body.location || null;
+      if (req.body.type !== undefined) item.type = req.body.type;
+      if (req.body.downloadAvailable !== undefined) item.downloadAvailable = req.body.downloadAvailable === 'true' || req.body.downloadAvailable === true;
 
       if (hasPdf && pdfFile) {
         deleteLocalFile(item.pdf);
@@ -139,6 +165,24 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
         const result = await uploadImageToCloudinary(imageFile.buffer, folder);
         item.image         = result.secure_url;
         item.imagePublicId = result.public_id;
+      }
+
+      // replace event images if provided
+      if (imagesFiles && imagesFiles.length) {
+        // delete previous images
+        if (Array.isArray(item.images)) {
+          for (const img of item.images) {
+            if (img?.publicId) await deleteCloudinaryImage(img.publicId);
+          }
+        }
+        const newImages = [];
+        for (const f of imagesFiles.slice(0,5)) {
+          if (f?.buffer) {
+            const r = await uploadImageToCloudinary(f.buffer, folder);
+            newImages.push({ url: r.secure_url, publicId: r.public_id, fileName: f.originalname, fileSize: f.size });
+          }
+        }
+        item.images = newImages;
       }
 
       item = await item.save();
@@ -157,6 +201,11 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
 
       if (hasPdf) deleteLocalFile(item.pdf);
       await deleteCloudinaryImage(item.imagePublicId);
+      if (Array.isArray(item.images)) {
+        for (const img of item.images) {
+          if (img?.publicId) await deleteCloudinaryImage(img.publicId);
+        }
+      }
       await Model.findByIdAndDelete(req.params.id);
       res.json({ success: true, message: 'Deleted successfully' });
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
@@ -187,6 +236,7 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       const skip      = (page - 1) * limit;
 
       let filter = {};
+      if (req.query.type) filter.type = req.query.type;
       if (search) filter.$or = [{ title: { $regex: search, $options: 'i' } }, { description: { $regex: search, $options: 'i' } }];
 
       const allowedSort = { createdAt: 'createdAt', title: 'title' };

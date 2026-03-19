@@ -17,8 +17,8 @@ router.use(protect);
 router.delete('/bulk', newsCtrl.bulkRemove);
 router.get('/', newsCtrl.getAll);
 router.get('/:id', newsCtrl.getOne);
-router.post('/', upload.fields([{ name: 'image', maxCount: 1 }]), newsCtrl.create);
-router.put('/:id', upload.fields([{ name: 'image', maxCount: 1 }]), newsCtrl.update);
+router.post('/', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'images', maxCount: 5 }]), newsCtrl.create);
+router.put('/:id', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'images', maxCount: 5 }]), newsCtrl.update);
 router.delete('/:id', newsCtrl.remove);
 
 module.exports = router;

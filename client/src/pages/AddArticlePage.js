@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createArticle } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import * as pdfjsLib from 'pdfjs-dist';
+// pdf preview removed: no pdfjs imports
 import Toast from '../components/Toast';
 import '../styles/form.css';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// (pdf worker not used since preview removed)
 
 const UploadIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -39,48 +39,21 @@ const formatBytes = (bytes) => {
   return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(bytes / 1024).toFixed(1)} KB`;
 };
 
-const PdfPreview = ({ file }) => {
-  const canvasRef = useRef(null);
-  const [previewError, setPreviewError] = useState(false);
-  const [rendering, setRendering] = useState(true);
+// Pdf preview removed to avoid worker/import issues
 
-  useEffect(() => {
-    if (!file) return;
-    setRendering(true); setPreviewError(false);
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(e.target.result) }).promise;
-        const page = await pdf.getPage(1);
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const viewport = page.getViewport({ scale: 1 });
-        const scale = (canvas.parentElement?.clientWidth || 300) / viewport.width;
-        const sv = page.getViewport({ scale });
-        canvas.width = sv.width; canvas.height = sv.height;
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport: sv }).promise;
-        setRendering(false);
-      } catch { setPreviewError(true); setRendering(false); }
-    };
-    reader.readAsArrayBuffer(file);
-  }, [file]);
-
-  if (previewError) return <div className="pdf-preview-error"><FileIcon /><span>Preview not available</span></div>;
-  return (
-    <div className="pdf-preview-wrap">
-      {rendering && <div className="pdf-preview-loading">Generating preview...</div>}
-      <canvas ref={canvasRef} className="pdf-preview-canvas" style={{ display: rendering ? 'none' : 'block' }} />
-    </div>
-  );
+const getInitialFormData = () => {
+  const today = new Date().toISOString().split('T')[0];
+  return {
+    title: '',
+    description: '',
+    pdf: null,
+    image: null,
+    images: [],
+    publishedDate: today,
+    downloadAvailable: true,
+    type: '',
+  };
 };
-
-const getInitialFormData = () => ({
-  title: '',
-  description: '',
-  pdf: null,
-  image: null,
-  publishedDate: '',
-});
 
 const AddArticlePage = ({ defaultType = 'article' }) => {
   const isNews     = defaultType === 'news';
@@ -88,6 +61,7 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
   const contentType = isNews ? 'news' : isResearch ? 'research' : 'article';
 
   const [formData, setFormData] = useState(() => getInitialFormData());
+  const imagesInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
@@ -98,15 +72,18 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
   const { token } = useAuth();
 
   useEffect(() => {
-    setFormData(getInitialFormData());
+    setFormData(p => ({ ...getInitialFormData(), type: contentType }));
     setError('');
     setSuccess('');
     setDragOver(false);
     if (pdfInputRef.current) pdfInputRef.current.value = '';
     if (imageInputRef.current) imageInputRef.current.value = '';
+    if (imagesInputRef.current) imagesInputRef.current.value = '';
   }, [contentType]);
 
   const handleInput = e => setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleCheckbox = e => setFormData(p => ({ ...p, [e.target.name]: e.target.checked }));
 
   const validatePdf = useCallback((file) => {
     if (file.type !== 'application/pdf') { setError('Only PDF files are allowed'); return false; }
@@ -122,6 +99,16 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
 
   const applyPdf = (file) => { if (file && validatePdf(file)) { setFormData(p => ({ ...p, pdf: file })); setError(''); } };
   const applyImage = (file) => { if (file && validateImage(file)) { setFormData(p => ({ ...p, image: file })); setError(''); } };
+  const applyImages = (files) => {
+    if (!files) return;
+    const list = Array.from(files).slice(0,5);
+    for (const f of list) {
+      if (!f.type.startsWith('image/')) { setError('Only image files are allowed'); return; }
+      if (f.size > 5 * 1024 * 1024) { setError('Each image must be less than 5MB'); return; }
+    }
+    setFormData(p => ({ ...p, images: list }));
+    setError('');
+  };
 
   const handleDrop = e => { e.preventDefault(); setDragOver(false); applyPdf(e.dataTransfer.files[0]); };
 
@@ -135,6 +122,9 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
     setFormData(p => ({ ...p, image: null }));
     if (imageInputRef.current) imageInputRef.current.value = '';
   };
+  const removeEventImage = (index) => {
+    setFormData(p => ({ ...p, images: p.images.filter((_, i) => i !== index) }));
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -142,7 +132,10 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
 
     if (!formData.title || !formData.description) { setError('Please fill in all fields'); return; }
     if (!isNews && !formData.pdf) { setError('Please upload a PDF file'); return; }
-    if (isNews && !formData.image) { setError('Please upload a cover image'); return; }
+    if (isNews) {
+      if (formData.type === 'news' && !formData.image) { setError('Please upload a cover image'); return; }
+      if (formData.type === 'event' && (!formData.images || formData.images.length === 0)) { /* images optional, allow */ }
+    }
 
     setLoading(true);
     try {
@@ -151,7 +144,13 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
       data.append('description', formData.description);
       if (formData.pdf)   data.append('pdf', formData.pdf);
       if (formData.image) data.append('image', formData.image);
+      // for events, append multiple images
+      if (formData.images && formData.images.length) {
+        formData.images.slice(0,5).forEach(f => data.append('images', f));
+      }
+      if (formData.type) data.append('type', formData.type);
       if (formData.publishedDate) data.append('publishedDate', formData.publishedDate);
+        if (isResearch && formData.downloadAvailable !== undefined) data.append('downloadAvailable', formData.downloadAvailable);
 
       const res = await createArticle(token, data, contentType);
       if (res.success) {
@@ -192,6 +191,18 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
               required disabled={loading} maxLength="100" />
           </div>
 
+          {isNews && (
+            <div className="field">
+              <label htmlFor="type">Type</label>
+              <div className="select-wrap">
+                <select id="type" name="type" value={formData.type || 'news'} onChange={e => setFormData(p => ({ ...p, type: e.target.value }))} disabled={loading}>
+                  <option value="news">News</option>
+                  <option value="event">Event</option>
+                </select>
+              </div>
+            </div>
+          )}
+
           {/* Description */}
           <div className="field">
             <label htmlFor="description">{isResearch ? 'Abstract / Summary' : 'Description'}</label>
@@ -205,7 +216,7 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
           <div className="field">
             <label htmlFor="publishedDate">
               <span className="label-icon"><CalendarIcon /></span>
-              Published Date <span className="label-optional">(optional)</span>
+              {isNews && formData.type === 'event' ? 'Event Date' : 'Published Date'} <span className="label-optional">(optional)</span>
             </label>
             <div className="date-input-wrap">
               <input type="date" id="publishedDate" name="publishedDate" value={formData.publishedDate}
@@ -213,36 +224,64 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
             </div>
           </div>
 
-          {/* Cover Image — required for news, optional for article/research */}
-          <div className="field">
-            <label>
-              Cover Image
-              {!isNews && <span className="label-optional"> (optional)</span>}
-            </label>
-            <div className="pdf-upload-area" style={{ cursor: 'pointer' }} onClick={() => !formData.image && imageInputRef.current?.click()}>
-              <input ref={imageInputRef} type="file" accept="image/*" onChange={e => applyImage(e.target.files[0])} disabled={loading} style={{ display: 'none' }} />
-              {formData.image ? (
-                <div className="pdf-file-badge">
-                  <img src={URL.createObjectURL(formData.image)} alt="preview"
-                    style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
-                  <div className="pdf-badge-info">
-                    <div className="pdf-badge-name">{formData.image.name}</div>
-                    <div className="pdf-badge-meta">
-                      <span className="pdf-size-chip">{formatBytes(formData.image.size)}</span>
-                      <span className="pdf-type-chip">IMAGE</span>
+          {/* Cover Image (for news) or Event Images (for event) */}
+          {!(isNews && formData.type === 'event') && (
+            <div className="field">
+              <label>
+                Cover Image
+                {!isNews && <span className="label-optional"> (optional)</span>}
+              </label>
+              <div className="pdf-upload-area" style={{ cursor: 'pointer' }} onClick={() => !formData.image && imageInputRef.current?.click()}>
+                <input ref={imageInputRef} type="file" accept="image/*" onChange={e => applyImage(e.target.files[0])} disabled={loading} style={{ display: 'none' }} />
+                {formData.image ? (
+                  <div className="pdf-file-badge">
+                    <img src={URL.createObjectURL(formData.image)} alt="preview"
+                      style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+                    <div className="pdf-badge-info">
+                      <div className="pdf-badge-name">{formData.image.name}</div>
+                      <div className="pdf-badge-meta">
+                        <span className="pdf-size-chip">{formatBytes(formData.image.size)}</span>
+                        <span className="pdf-type-chip">IMAGE</span>
+                      </div>
                     </div>
+                    <button type="button" className="pdf-remove-btn" onClick={removeImage} disabled={loading}><TrashIcon /></button>
                   </div>
-                  <button type="button" className="pdf-remove-btn" onClick={removeImage} disabled={loading}><TrashIcon /></button>
-                </div>
-              ) : (
-                <div className="pdf-empty-state" style={{ cursor: 'pointer' }}>
-                  <div className="pdf-upload-icon"><UploadIcon /></div>
-                  <div className="pdf-upload-title">Click to upload cover image</div>
-                  <div className="pdf-upload-sub">JPG, PNG, WebP — Max 5MB</div>
-                </div>
-              )}
+                ) : (
+                  <div className="pdf-empty-state" style={{ cursor: 'pointer' }}>
+                    <div className="pdf-upload-icon"><UploadIcon /></div>
+                    <div className="pdf-upload-title">Click to upload cover image</div>
+                    <div className="pdf-upload-sub">JPG, PNG, WebP — Max 5MB</div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Event images */}
+          {isNews && formData.type === 'event' && (
+            <div className="field">
+              <label>Event Images (up to 5)</label>
+              <div className="pdf-upload-area" style={{ cursor: 'pointer' }} onClick={() => imagesInputRef.current?.click()}>
+                <input ref={imagesInputRef} type="file" accept="image/*" multiple onChange={e => applyImages(e.target.files)} disabled={loading} style={{ display: 'none' }} />
+                {formData.images && formData.images.length ? (
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    {formData.images.map((img, idx) => (
+                      <div key={idx} style={{ position: 'relative' }}>
+                        <img src={URL.createObjectURL(img)} alt={img.name} style={{ width: 92, height: 92, objectFit: 'cover', borderRadius: 8 }} />
+                        <button type="button" className="pdf-remove-btn" onClick={() => removeEventImage(idx)} style={{ position: 'absolute', right: -6, top: -6 }} disabled={loading}><TrashIcon /></button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="pdf-empty-state">
+                    <div className="pdf-upload-icon"><UploadIcon /></div>
+                    <div className="pdf-upload-title">Click to add event images</div>
+                    <div className="pdf-upload-sub">JPG, PNG, WebP — Max 5 images, 5MB each</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* PDF Upload — hidden for news */}
           {!isNews && (
@@ -272,10 +311,7 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
                       </div>
                       <button type="button" className="pdf-remove-btn" onClick={removePdf} disabled={loading}><TrashIcon /></button>
                     </div>
-                    <div className="pdf-preview-section">
-                      <div className="pdf-preview-label">Page 1 Preview</div>
-                      <PdfPreview file={formData.pdf} />
-                    </div>
+                    {/* preview removed */}
                   </div>
                 ) : (
                   <div className="pdf-empty-state">
@@ -284,6 +320,21 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
                     <div className="pdf-upload-sub">or click to browse — Max 10MB</div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Research-specific: allow choosing if download is available */}
+          {isResearch && (
+            <div className="field">
+              <label htmlFor="downloadAvailable">Allow Download</label>
+              <div className="checkbox-wrap">
+                <label className="switch">
+                  <input id="downloadAvailable" name="downloadAvailable" type="checkbox"
+                    checked={!!formData.downloadAvailable} onChange={handleCheckbox} disabled={loading} />
+                  <span className="slider" />
+                </label>
+                <span className="label-optional"> Allow users to download the PDF</span>
               </div>
             </div>
           )}

@@ -10,6 +10,7 @@ const researchSchema = new mongoose.Schema(
     image:        { type: String, default: null },
     imagePublicId:{ type: String, default: null },
     publishedDate:{ type: Date, default: null },
+    downloadAvailable: { type: Boolean, default: true },
     admin:        { type: mongoose.Schema.ObjectId, ref: 'Admin', required: true },
   },
   { timestamps: true }
