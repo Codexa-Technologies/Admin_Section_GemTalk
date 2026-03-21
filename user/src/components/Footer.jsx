@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
-import instaOne from "../assets/HeroSection1.webp";
-import instaTwo from "../assets/HeroSection2.jpg";
-import instaThree from "../assets/HeroSection3.jpg";
-import instaFour from "../assets/helpcenter.webp";
-import instaFive from "../assets/helpCenter2.webp";
-import instaSix from "../assets/herosection3.webp";
+import instaOne from "../assets/footer/footer1.webp";
+import instaTwo from "../assets/footer/footer2.webp";
+import instaThree from "../assets/footer/footer3.webp";
+import instaFour from "../assets/footer/footer4.webp";
+import instaFive from "../assets/footer/footer5.webp";
+import instaSix from "../assets/footer/footer6.webp";
 
 export default function Footer() {
   return (
