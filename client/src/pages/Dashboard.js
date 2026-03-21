@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardStats } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -99,9 +99,7 @@ const Dashboard = () => {
   const { token, admin } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => { fetchStats(); }, []);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
       const res = await getDashboardStats(token);
@@ -111,7 +109,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   if (loading) return <div className="dashboard-loading">Loading dashboard...</div>;
 
