@@ -31,12 +31,16 @@ const Admin = mongoose.model('Admin', adminSchema);
 
 async function createAdmin() {
   try {
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@gemtalk.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Wije4710';
+    const adminName = process.env.ADMIN_NAME || 'Charith Wijerathna';
+
     console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✓ Connected to MongoDB');
 
     // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email: 'admin@gemtalk.com' });
+    const existingAdmin = await Admin.findOne({ email: adminEmail });
     
     if (existingAdmin) {
       console.log('✓ Admin user already exists!');
@@ -46,19 +50,19 @@ async function createAdmin() {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     // Create admin
     const admin = await Admin.create({
-      email: 'admin@gemtalk.com',
+      email: adminEmail,
       password: hashedPassword,
-      name: 'Admin User',
+      name: adminName,
     });
 
     console.log('✓ Admin created successfully!');
-    console.log('Email: admin@gemtalk.com');
-    console.log('Password: password123');
-    console.log('Name:', admin.name);
+    console.log('Email:', adminEmail);
+    console.log('Password:', adminPassword);
+    console.log('Name:', adminName);
     
     process.exit(0);
   } catch (error) {
