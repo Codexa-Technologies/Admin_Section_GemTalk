@@ -182,15 +182,6 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
 
         <form onSubmit={handleSubmit} className="form-body">
 
-          {/* Title */}
-          <div className="field">
-            <label htmlFor="title">{isResearch ? 'Paper Title' : isNews ? 'News Title' : 'Article Title'}</label>
-            <span className="char-count">{formData.title.length}/100</span>
-            <input type="text" id="title" name="title" value={formData.title} onChange={handleInput}
-              placeholder={isResearch ? 'Enter research paper title' : isNews ? 'Enter news title' : 'Enter article title'}
-              required disabled={loading} maxLength="100" />
-          </div>
-
           {isNews && (
             <div className="field">
               <label htmlFor="type">Type</label>
@@ -202,6 +193,15 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
               </div>
             </div>
           )}
+
+          {/* Title */}
+          <div className="field">
+            <label htmlFor="title">{isResearch ? 'Paper Title' : isNews ? (formData.type === 'event' ? 'Event Title' : 'News Title') : 'Article Title'}</label>
+            <span className="char-count">{formData.title.length}/100</span>
+            <input type="text" id="title" name="title" value={formData.title} onChange={handleInput}
+              placeholder={isResearch ? 'Enter research paper title' : isNews ? (formData.type === 'event' ? 'Enter event title' : 'Enter news title') : 'Enter article title'}
+              required disabled={loading} maxLength="100" />
+          </div>
 
           {/* Description */}
           <div className="field">

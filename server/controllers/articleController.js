@@ -3,7 +3,6 @@ const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const path = require('path');
 
-// Upload image buffer to Cloudinary
 const uploadImageToCloudinary = (buffer, folder = 'gemtalk/articles') => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -28,7 +27,6 @@ const deleteLocalFile = (filePath) => {
   fs.unlink(full, () => {});
 };
 
-// ── GET all articles (admin) ──────────────────────────
 exports.getArticles = async (req, res) => {
   try {
     const page      = parseInt(req.query.page)  || 1;

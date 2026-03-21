@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
 import Navbar from './components/Navbar';
+import HeroSection from './components/HeroSection';
+import LatestArticles from './components/LatestArticles';
+import LatestResearch from './components/LatestResearch';
+import LatestNews from './components/LatestNews';
+import LatestEvents from './components/LatestEvents';
+import FAQ from './components/FAQ';
+import WebsiteScroller from './components/WebsiteScroller';
+import HelpCenter from './components/HelpCenter';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import AuthPage from './pages/AuthPage';
-import Article from './pages/Article';
-import Research from './pages/Research';
-import ContactUs from './pages/ContactUs';
 
 function App() {
-  const [authOpen, setAuthOpen] = useState(false);
-
   return (
-    <>
-      <Navbar onOpenAuth={() => setAuthOpen(true)} />
-      <section id="home"><Home /></section>
-      <section id="article"><Article /></section>
-      <section id="research"><Research /></section>
-      <section id="contact"><ContactUs /></section>
-      <Footer onOpenAuth={() => setAuthOpen(true)} />
-      <AuthPage isOpen={authOpen} onClose={() => setAuthOpen(false)} />
-    </>
+    <div>
+      <Navbar />
+      <HeroSection />
+      <HelpCenter />
+      <LatestArticles />
+      <LatestResearch />
+      <LatestNews />
+      <LatestEvents />
+      <FAQ />
+      <WebsiteScroller />
+      <Footer />
+    </div>
   );
 }
 

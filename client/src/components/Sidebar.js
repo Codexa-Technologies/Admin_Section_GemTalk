@@ -53,7 +53,7 @@ const navSections = [
     label: 'Add Content',
     items: [
       { path: '/add-article',  label: 'Add Article',         icon: icons.addArticle },
-      { path: '/add-news',     label: 'Add Latest News',     icon: icons.news },
+      { path: '/add-news',     label: 'Add events & news',  icon: icons.news },
       { path: '/add-research', label: 'Add Research Papers', icon: icons.research },
     ],
   },
