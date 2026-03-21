@@ -100,7 +100,7 @@ export default function Footer() {
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.81.3 1.6.54 2.36a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.72-1.06a2 2 0 0 1 2.11-.45c.76.24 1.55.42 2.36.54A2 2 0 0 1 22 16.92z" />
                 </svg>
               </span>
-              +94 11 2345678
+              +94 77 553 2053
             </li>
             <li className="flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e95b5]/10 text-[#1e95b5]">
@@ -117,7 +117,7 @@ export default function Footer() {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
               </span>
-              Colombo, Sri Lanka
+              Ratanapura, Sri Lanka
             </li>
             <li className="flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e95b5]/10 text-[#1e95b5]">
@@ -134,7 +134,7 @@ export default function Footer() {
                   <path d="m22 6-10 7L2 6" />
                 </svg>
               </span>
-              info@ceylontours.lk
+              gemtalk.info@gmail.com
             </li>
           </ul>
         </div>

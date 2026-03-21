@@ -30,7 +30,7 @@ export default function HelpCenter() {
           </p>
           <div className="mt-8 flex justify-center">
             <a
-              href="https://wa.me/94771234567"
+              href="https://wa.me/94775532053"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#1da851]"
