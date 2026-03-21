@@ -15,8 +15,11 @@ const handleResponse = async (response, fallbackMessage) => {
   return response.json();
 };
 
-export const getQuestions = async () => {
-  const response = await fetch(buildUrl("/questions"));
+export const getQuestions = async ({ page = 1, limit = 50, search = "" } = {}) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (search) params.set("search", search);
+
+  const response = await fetch(buildUrl(`/questions?${params.toString()}`));
   return handleResponse(response, "Failed to load questions");
 };
 

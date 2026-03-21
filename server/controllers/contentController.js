@@ -246,6 +246,8 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       const search    = req.query.search    || '';
       const sortField = req.query.sortField || 'createdAt';
       const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+      const dateFrom  = req.query.dateFrom;
+      const dateTo    = req.query.dateTo;
       const skip      = (page - 1) * limit;
 
       let filter = {};
@@ -253,6 +255,22 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
         filter.type = req.query.type;
       }
       if (search) filter.$or = [{ title: { $regex: search, $options: 'i' } }, { description: { $regex: search, $options: 'i' } }];
+      if (dateFrom || dateTo) {
+        const dateField =
+          req.query.type === 'event' && Model.schema.path('eventDate')
+            ? 'eventDate'
+            : Model.schema.path('publishedDate')
+              ? 'publishedDate'
+              : 'createdAt';
+
+        filter[dateField] = {};
+        if (dateFrom) filter[dateField].$gte = new Date(dateFrom);
+        if (dateTo) {
+          const to = new Date(dateTo);
+          to.setHours(23, 59, 59, 999);
+          filter[dateField].$lte = to;
+        }
+      }
 
       const allowedSort = { createdAt: 'createdAt', title: 'title' };
       const sortBy = allowedSort[sortField] || 'createdAt';

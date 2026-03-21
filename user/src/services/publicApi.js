@@ -6,10 +6,19 @@ const buildFileUrl = (path) => {
   return `${API_BASE_URL.replace(/\/api$/, "")}${path}`;
 };
 
-export const getPublicArticles = async ({ page = 1, limit = 12, search = "", type = "article" } = {}) => {
+export const getPublicArticles = async ({
+  page = 1,
+  limit = 12,
+  search = "",
+  type = "article",
+  dateFrom = "",
+  dateTo = "",
+} = {}) => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (search) params.set("search", search);
   if (type) params.set("type", type);
+  if (dateFrom) params.set("dateFrom", dateFrom);
+  if (dateTo) params.set("dateTo", dateTo);
 
   const response = await fetch(buildPublicUrl(`/public/articles?${params.toString()}`));
   if (!response.ok) {

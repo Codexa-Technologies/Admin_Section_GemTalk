@@ -8,6 +8,7 @@ const navLinks = [
   { label: "Research", to: "/research" },
   { label: "News", to: "/news" },
   { label: "Events", to: "/events" },
+  { label: "Q&A", to: "/faq" },
 ];
 
 export default function Navbar({ onLoginClick = () => {} }) {

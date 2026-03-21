@@ -19,7 +19,7 @@ export default function FAQ() {
     const loadQuestions = async () => {
       try {
         setLoading(true);
-        const response = await getQuestions();
+        const response = await getQuestions({ limit: 4 });
         if (!isMounted) return;
         setQuestions(response.data || []);
         setError("");

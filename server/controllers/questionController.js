@@ -5,9 +5,18 @@ exports.getQuestions = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
     const skip = (page - 1) * limit;
+    const search = req.query.search || '';
 
-    const totalCount = await Question.countDocuments();
-    const questions = await Question.find()
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { question: { $regex: search, $options: 'i' } },
+        { 'answers.text': { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const totalCount = await Question.countDocuments(filter);
+    const questions = await Question.find(filter)
       .populate('askedBy', 'name')
       .populate('answers.answeredBy', 'name')
       .sort({ createdAt: -1 })
@@ -37,9 +46,18 @@ exports.getQuestionsAdmin = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
     const skip = (page - 1) * limit;
+    const search = req.query.search || '';
 
-    const totalCount = await Question.countDocuments();
-    const questions = await Question.find()
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { question: { $regex: search, $options: 'i' } },
+        { 'answers.text': { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const totalCount = await Question.countDocuments(filter);
+    const questions = await Question.find(filter)
       .populate('askedBy', 'name email')
       .populate('answers.answeredBy', 'name email')
       .sort({ createdAt: -1 })

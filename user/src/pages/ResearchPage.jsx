@@ -45,6 +45,7 @@ export default function ResearchPage() {
   const [selectedResearch, setSelectedResearch] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -52,7 +53,7 @@ export default function ResearchPage() {
     const loadResearch = async () => {
       try {
         setLoading(true);
-        const response = await getPublicArticles({ type: "research", page, limit: PAGE_SIZE });
+        const response = await getPublicArticles({ type: "research", page, limit: PAGE_SIZE, search });
         if (!isMounted) return;
         setResearchItems(response.articles || []);
         setPagination(response.pagination || { totalPages: 1, totalCount: 0 });
@@ -69,7 +70,7 @@ export default function ResearchPage() {
     return () => {
       isMounted = false;
     };
-  }, [page]);
+  }, [page, search]);
 
   const formatDate = (value) => {
     if (!value) return "";
@@ -133,6 +134,18 @@ export default function ResearchPage() {
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
               Explore All Research
             </h2>
+          </div>
+          <div className="w-full md:w-72">
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder="Search research"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#1e95b5] focus:ring-2 focus:ring-[#1e95b5]/20"
+            />
           </div>
         </div>
 

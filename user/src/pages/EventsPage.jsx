@@ -44,6 +44,9 @@ export default function EventsPage() {
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -51,7 +54,14 @@ export default function EventsPage() {
     const loadEvents = async () => {
       try {
         setLoading(true);
-        const response = await getPublicArticles({ type: "event", page, limit: PAGE_SIZE });
+        const response = await getPublicArticles({
+          type: "event",
+          page,
+          limit: PAGE_SIZE,
+          search,
+          dateFrom,
+          dateTo,
+        });
         if (!isMounted) return;
         setEvents(response.articles || []);
         setPagination(response.pagination || { totalPages: 1, totalCount: 0 });
@@ -68,7 +78,7 @@ export default function EventsPage() {
     return () => {
       isMounted = false;
     };
-  }, [page]);
+  }, [page, search, dateFrom, dateTo]);
 
   const formatDate = (value) => {
     if (!value) return "";
@@ -122,6 +132,39 @@ export default function EventsPage() {
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
               Upcoming Events
             </h2>
+          </div>
+          <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder="Search events"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#1e95b5] focus:ring-2 focus:ring-[#1e95b5]/20 md:w-56"
+            />
+            <div className="flex w-full items-center gap-2 md:w-auto">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(event) => {
+                  setDateFrom(event.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm outline-none transition focus:border-[#1e95b5] focus:ring-2 focus:ring-[#1e95b5]/20"
+              />
+              <span className="text-sm text-slate-400">to</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(event) => {
+                  setDateTo(event.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm outline-none transition focus:border-[#1e95b5] focus:ring-2 focus:ring-[#1e95b5]/20"
+              />
+            </div>
           </div>
         </div>
 

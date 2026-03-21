@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addAnswer, deleteQuestion, getQuestions } from "../services/questionApi";
+import { addAnswer, createQuestion, deleteQuestion, getQuestions } from "../services/questionApi";
 import Pagination from "../components/Pagination";
 
 export default function FAQPage() {
@@ -13,6 +13,11 @@ export default function FAQPage() {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [page, setPage] = useState(1);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [pagination, setPagination] = useState({ totalPages: 1, totalCount: 0 });
+  const [search, setSearch] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [questionText, setQuestionText] = useState("");
+  const [addError, setAddError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -20,9 +25,10 @@ export default function FAQPage() {
     const loadQuestions = async () => {
       try {
         setLoading(true);
-        const response = await getQuestions();
+        const response = await getQuestions({ page, limit: PAGE_SIZE, search });
         if (!isMounted) return;
         setQuestions(response.data || []);
+        setPagination(response.pagination || { totalPages: 1, totalCount: 0 });
         setError("");
       } catch (err) {
         if (!isMounted) return;
@@ -36,7 +42,7 @@ export default function FAQPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [page, search]);
 
   useEffect(() => {
     const readAuth = () => {
@@ -93,12 +99,47 @@ export default function FAQPage() {
     try {
       setAnswerError("");
       await deleteQuestion({ id });
-      setQuestions((prev) => prev.filter((item) => item._id !== id));
+      setQuestions((prev) => {
+        const next = prev.filter((item) => item._id !== id);
+        if (next.length === 0 && page > 1) {
+          setPage(page - 1);
+        }
+        return next;
+      });
       if (selectedQuestion?._id === id) {
         setSelectedQuestion(null);
       }
     } catch (err) {
       setAnswerError(err?.message || "Failed to delete question");
+    }
+  };
+
+  const closeAddModal = () => {
+    setModalOpen(false);
+    setQuestionText("");
+    setAddError("");
+  };
+
+  const handleAddQuestion = async () => {
+    if (!questionText.trim()) return;
+    if (!isLoggedIn) {
+      setAddError("Log in to add a question.");
+      return;
+    }
+
+    try {
+      setAddError("");
+      const response = await createQuestion({ question: questionText.trim() });
+      setQuestions((prev) => [response.data, ...prev].slice(0, PAGE_SIZE));
+      setPagination((prev) => {
+        const totalCount = prev.totalCount + 1;
+        const totalPages = Math.max(prev.totalPages, Math.ceil(totalCount / PAGE_SIZE));
+        return { ...prev, totalCount, totalPages };
+      });
+      setPage(1);
+      closeAddModal();
+    } catch (err) {
+      setAddError(err?.message || "Failed to add question");
     }
   };
 
@@ -111,15 +152,6 @@ export default function FAQPage() {
     setSelectedQuestion(null);
   };
 
-  useEffect(() => {
-    const totalPages = Math.max(1, Math.ceil(questions.length / PAGE_SIZE));
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [questions, page]);
-
-  const totalPages = Math.max(1, Math.ceil(questions.length / PAGE_SIZE));
-  const pagedQuestions = questions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <section className="bg-white py-16">
@@ -132,6 +164,25 @@ export default function FAQPage() {
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
               Q & A <span className="text-[#1e95b5]">Section</span>
             </h2>
+          </div>
+          <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder="Search questions"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#1e95b5] focus:ring-2 focus:ring-[#1e95b5]/20 md:w-72"
+            />
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]"
+            >
+              Add Question
+            </button>
           </div>
         </div>
 
@@ -151,7 +202,7 @@ export default function FAQPage() {
         ) : (
           <div className="mt-10">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {pagedQuestions.map((item) => (
+              {questions.map((item) => (
               <div
                 key={item._id || item.question}
                 className="relative rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
@@ -249,10 +300,65 @@ export default function FAQPage() {
               </div>
               ))}
             </div>
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination currentPage={page} totalPages={pagination.totalPages} onPageChange={setPage} />
           </div>
         )}
       </div>
+
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeAddModal}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Add Question</h3>
+              <button
+                type="button"
+                onClick={closeAddModal}
+                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <label className="text-sm font-semibold text-gray-700">Your question</label>
+              <textarea
+                rows={4}
+                value={questionText}
+                onChange={(event) => setQuestionText(event.target.value)}
+                placeholder="Type your question"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-[#1e95b5] focus:ring-2 focus:ring-[#1e95b5]/20"
+              />
+              {addError && <p className="mt-2 text-sm text-red-500">{addError}</p>}
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeAddModal}
+                className="rounded-md border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddQuestion}
+                className="rounded-md bg-[#1e95b5] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#167d97]"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedQuestion && (
         <div
