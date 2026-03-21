@@ -20,44 +20,6 @@ export default function Footer() {
             channels, find quick links to resources, and get support to make
             your journey effortless.
           </p>
-          <div className="mt-6 flex items-center gap-3">
-            <a
-              href="#"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-[#074E67] transition-colors hover:border-[#1e95b5] hover:text-[#1e95b5]"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-              >
-                <path d="M22 12a10 10 0 1 0-11.5 9.9v-7h-2.4V12h2.4V9.8c0-2.4 1.4-3.7 3.6-3.7 1 0 2 .2 2 .2v2.3h-1.1c-1.1 0-1.4.7-1.4 1.4V12h2.4l-.4 2.9h-2v7A10 10 0 0 0 22 12Z" />
-              </svg>
-            </a>
-            <a
-              href="#"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-[#074E67] transition-colors hover:border-[#1e95b5] hover:text-[#1e95b5]"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-              >
-                <path d="M20 5.7c-.6.3-1.2.5-1.9.6.7-.4 1.2-1 1.4-1.7-.6.4-1.3.6-2 .8a3.3 3.3 0 0 0-5.7 3c-2.7-.1-5.1-1.4-6.7-3.5a3.3 3.3 0 0 0 1 4.4c-.5 0-1-.2-1.5-.4 0 1.6 1.1 3 2.6 3.3-.4.1-.8.1-1.2.1-.3 0-.5 0-.8-.1.5 1.4 1.9 2.4 3.6 2.4a6.6 6.6 0 0 1-4.1 1.4c-.3 0-.6 0-.9-.1a9.3 9.3 0 0 0 5 1.5c6 0 9.3-5 9.3-9.3v-.4c.7-.5 1.2-1 1.6-1.6Z" />
-              </svg>
-            </a>
-            <a
-              href="#"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-[#074E67] transition-colors hover:border-[#1e95b5] hover:text-[#1e95b5]"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-              >
-                <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm10 2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm-5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Zm4.8-3.8a.9.9 0 1 1-1.8 0 .9.9 0 0 1 1.8 0Z" />
-              </svg>
-            </a>
-          </div>
         </div>
 
         <div className="text-center">
