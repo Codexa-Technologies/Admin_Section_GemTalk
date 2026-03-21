@@ -61,7 +61,7 @@ export default function LatestNews() {
     image: item.image || placeholderImage,
     date: formatDate(item.publishedDate || item.createdAt),
   }));
-  const shouldScroll = displayItems.length >= 5;
+  const shouldScroll = displayItems.length >= 4;
 
   return (
     <section className="bg-white py-16">
@@ -100,7 +100,7 @@ export default function LatestNews() {
             </div>
           </div>
         ) : (
-          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {displayItems.map((item) => (
               <NewsCard key={`news-${item._id || item.title}`} item={item} />
             ))}
