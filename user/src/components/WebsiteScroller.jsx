@@ -6,31 +6,32 @@ import logoFive from "../assets/websites/logo5.jpeg";
 import logoSix from "../assets/websites/logo6.jpeg";
 
 const logos = [logoOne, logoTwo, logoThree, logoFour, logoFive, logoSix];
+const repeatedLogos = Array.from({ length: 12 }, (_, index) => logos[index % logos.length]);
 
 export default function WebsiteScroller() {
   return (
     <section className="bg-[#074E67] py-14">
       <div className="mx-auto max-w-7xl px-6">
-        <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+        <h2 className="text-center text-3xl font-extrabold text-white sm:text-4xl">
           Our <span className="text-[#7fd3e6]">Partners</span>
         </h2>
         <div className="mt-8 overflow-hidden pb-4">
           <div className="logo-track">
             <div className="logo-row">
-              {logos.map((logo, index) => (
+              {repeatedLogos.map((logo, index) => (
                 <div
                   key={`logo-${index}`}
-                  className="flex h-28 w-28 items-center justify-center rounded-2xl bg-white shadow-md"
+                  className="logo-item flex h-28 w-28 items-center justify-center rounded-2xl bg-white shadow-md"
                 >
                   <img src={logo} alt={`Partner ${index + 1}`} className="h-14 w-14 object-contain" />
                 </div>
               ))}
             </div>
             <div className="logo-row" aria-hidden="true">
-              {logos.map((logo, index) => (
+              {repeatedLogos.map((logo, index) => (
                 <div
                   key={`logo-dup-${index}`}
-                  className="flex h-28 w-28 items-center justify-center rounded-2xl bg-white shadow-md"
+                  className="logo-item flex h-28 w-28 items-center justify-center rounded-2xl bg-white shadow-md"
                 >
                   <img src={logo} alt={`Partner ${index + 1}`} className="h-14 w-14 object-contain" />
                 </div>
@@ -51,7 +52,6 @@ export default function WebsiteScroller() {
         }
         .logo-track {
           display: flex;
-          width: max-content;
           animation: logo-scroll 30s linear infinite;
           will-change: transform;
         }
@@ -59,6 +59,14 @@ export default function WebsiteScroller() {
           display: flex;
           gap: 1.5rem;
           padding-right: 1.5rem;
+          flex-shrink: 0;
+          width: max-content;
+        }
+        .logo-item {
+          flex-shrink: 0;
+        }
+        .logo-track img {
+          display: block;
         }
       `}</style>
     </section>

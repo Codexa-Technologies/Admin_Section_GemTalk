@@ -94,14 +94,14 @@ export default function HeroSection() {
 
           <div className="flex-1">
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="hidden sm:block">
                 <img
                   src={heroImageOne}
                   alt="Sri Lanka landscape"
                   className="h-80 w-full rounded-2xl object-cover shadow-md"
                 />
               </div>
-              <div className="rounded-2xl bg-gray-100 p-1 shadow-md">
+              <div className="hidden rounded-2xl bg-gray-100 p-1 shadow-md sm:block">
                 <img
                   src={heroImageTwo}
                   alt="Tea garden"

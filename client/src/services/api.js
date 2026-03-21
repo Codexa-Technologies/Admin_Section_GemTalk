@@ -172,3 +172,19 @@ export const deleteAdminQuestion = async (token, id) => {
 
   return await response.json();
 };
+
+export const deleteAdminAnswer = async (token, questionId, answerId) => {
+  const response = await fetch(`${API_BASE_URL}/questions/admin/${questionId}/answers/${answerId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw error;
+  }
+
+  return await response.json();
+};

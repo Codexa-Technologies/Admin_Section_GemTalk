@@ -4,6 +4,7 @@ const {
 	createQuestion,
 	addAnswer,
 	deleteAnswer,
+	deleteAnswerAdmin,
 	deleteQuestion,
 	getQuestionsAdmin,
 	deleteQuestionAdmin,
@@ -19,6 +20,7 @@ router.post('/:id/answers', protectUser, addAnswer);
 router.delete('/:id/answers/:answerId', protectUser, deleteAnswer);
 router.delete('/:id', protectUser, deleteQuestion);
 router.get('/admin', protect, getQuestionsAdmin);
+router.delete('/admin/:id/answers/:answerId', protect, deleteAnswerAdmin);
 router.delete('/admin/:id', protect, deleteQuestionAdmin);
 
 module.exports = router;

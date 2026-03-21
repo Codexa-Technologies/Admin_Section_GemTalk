@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAdminQuestions, deleteAdminQuestion } from '../services/api';
+import { getAdminQuestions, deleteAdminAnswer, deleteAdminQuestion } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import '../styles/manage-questions.css';
 
@@ -13,6 +13,7 @@ const ManageQuestionsPage = () => {
   const [error, setError] = useState('');
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [answerError, setAnswerError] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -44,6 +45,21 @@ const ManageQuestionsPage = () => {
       setQuestions((prev) => prev.filter((item) => item._id !== id));
     } catch (err) {
       setError(err.message || 'Failed to delete question');
+    }
+  };
+
+  const handleAnswerDelete = async (questionId, answerId) => {
+    try {
+      setAnswerError('');
+      const response = await deleteAdminAnswer(token, questionId, answerId);
+      setQuestions((prev) =>
+        prev.map((item) => (item._id === questionId ? response.data : item))
+      );
+      if (selectedQuestion?._id === questionId) {
+        setSelectedQuestion(response.data);
+      }
+    } catch (err) {
+      setAnswerError(err.message || 'Failed to delete answer');
     }
   };
 
@@ -101,7 +117,17 @@ const ManageQuestionsPage = () => {
               {selectedQuestion.answers?.length ? (
                 selectedQuestion.answers.map((answer) => (
                   <div key={answer._id || answer.text} className="answer-card">
-                    <p>{answer.text}</p>
+                    <div className="answer-card__row">
+                      <p>{answer.text}</p>
+                      <button
+                        className="answer-card__delete"
+                        onClick={() => handleAnswerDelete(selectedQuestion._id, answer._id)}
+                        title="Delete answer"
+                        aria-label="Delete answer"
+                      >
+                        ✕
+                      </button>
+                    </div>
                     <span>Answered by {answer.answeredBy?.name || 'User'}</span>
                   </div>
                 ))
@@ -109,6 +135,7 @@ const ManageQuestionsPage = () => {
                 <p className="question-modal__empty">No answers yet.</p>
               )}
             </div>
+            {answerError && <div className="question-modal__error">{answerError}</div>}
           </div>
         </div>
       )}

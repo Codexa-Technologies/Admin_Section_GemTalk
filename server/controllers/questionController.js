@@ -201,6 +201,44 @@ exports.deleteAnswer = async (req, res) => {
   }
 };
 
+exports.deleteAnswerAdmin = async (req, res) => {
+  try {
+    const { id, answerId } = req.params;
+    const question = await Question.findById(id);
+    if (!question) {
+      return res.status(404).json({
+        success: false,
+        message: 'Question not found',
+      });
+    }
+
+    const answer = question.answers.id(answerId);
+    if (!answer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Answer not found',
+      });
+    }
+
+    answer.deleteOne();
+    await question.save();
+
+    const populated = await Question.findById(question._id)
+      .populate('askedBy', 'name email')
+      .populate('answers.answeredBy', 'name email');
+
+    return res.status(200).json({
+      success: true,
+      data: populated,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 exports.deleteQuestionAdmin = async (req, res) => {
   try {
     const question = await Question.findById(req.params.id);

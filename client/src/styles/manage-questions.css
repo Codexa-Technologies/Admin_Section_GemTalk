@@ -181,6 +181,29 @@
   color: #334155;
 }
 
+.answer-card__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.answer-card__delete {
+  border: 1px solid #fecaca;
+  background: #fff5f5;
+  color: #dc2626;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.answer-card__delete:hover {
+  background: #fee2e2;
+}
+
 .answer-card span {
   display: block;
   margin-top: 6px;
@@ -191,4 +214,10 @@
 .question-modal__empty {
   font-size: 13px;
   color: #94a3b8;
+}
+
+.question-modal__error {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #dc2626;
 }
