@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addAnswer, createQuestion, deleteQuestion, getQuestions } from "../services/questionApi";
+import { addAnswer, createQuestion, deleteAnswer, deleteQuestion, getQuestions } from "../services/questionApi";
 import Pagination from "../components/Pagination";
 
 export default function FAQPage() {
@@ -111,6 +111,21 @@ export default function FAQPage() {
       }
     } catch (err) {
       setAnswerError(err?.message || "Failed to delete question");
+    }
+  };
+
+  const handleAnswerDelete = async (questionId, answerId) => {
+    try {
+      setAnswerError("");
+      const response = await deleteAnswer({ id: questionId, answerId });
+      setQuestions((prev) =>
+        prev.map((item) => (item._id === questionId ? response.data : item))
+      );
+      if (selectedQuestion?._id === questionId) {
+        setSelectedQuestion(response.data);
+      }
+    } catch (err) {
+      setAnswerError(err?.message || "Failed to delete answer");
     }
   };
 
@@ -398,7 +413,35 @@ export default function FAQPage() {
               {Array.isArray(selectedQuestion.answers) && selectedQuestion.answers.length > 0 ? (
                 selectedQuestion.answers.map((answer) => (
                   <div key={answer._id || answer.text} className="rounded-xl bg-slate-50 p-4">
-                    <p className="text-sm text-gray-700">{answer.text}</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm text-gray-700">{answer.text}</p>
+                      {currentUserId && answer.answeredBy?._id === currentUserId ? (
+                        <button
+                          type="button"
+                          onClick={() => handleAnswerDelete(selectedQuestion._id, answer._id)}
+                          className="shrink-0 rounded-full border border-red-200 p-1 text-red-500 transition-colors hover:bg-red-50"
+                          aria-label="Delete answer"
+                          title="Delete"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-4 w-4"
+                          >
+                            <path d="M3 6h18" />
+                            <path d="M8 6V4h8v2" />
+                            <path d="M19 6l-1 14H6L5 6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                          </svg>
+                        </button>
+                      ) : null}
+                    </div>
                     {answer.answeredBy?.name && (
                       <p className="mt-2 text-xs text-slate-400">
                         Answered by {answer.answeredBy.name}
@@ -410,6 +453,7 @@ export default function FAQPage() {
                 <p className="text-sm text-slate-400">No answers yet.</p>
               )}
             </div>
+            {answerError && <p className="mt-4 text-sm text-red-500">{answerError}</p>}
           </div>
         </div>
       )}

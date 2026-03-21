@@ -51,6 +51,17 @@ export const addAnswer = async ({ id, text }) => {
   return handleResponse(response, "Failed to add answer");
 };
 
+export const deleteAnswer = async ({ id, answerId }) => {
+  const response = await fetch(buildUrl(`/questions/${id}/answers/${answerId}`), {
+    method: "DELETE",
+    headers: {
+      ...getAuthHeaders(),
+    },
+  });
+
+  return handleResponse(response, "Failed to delete answer");
+};
+
 export const deleteQuestion = async ({ id }) => {
   const response = await fetch(buildUrl(`/questions/${id}`), {
     method: "DELETE",

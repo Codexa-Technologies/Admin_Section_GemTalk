@@ -3,6 +3,7 @@ const {
 	getQuestions,
 	createQuestion,
 	addAnswer,
+	deleteAnswer,
 	deleteQuestion,
 	getQuestionsAdmin,
 	deleteQuestionAdmin,
@@ -15,6 +16,7 @@ const router = express.Router();
 router.get('/', getQuestions);
 router.post('/', protectUser, createQuestion);
 router.post('/:id/answers', protectUser, addAnswer);
+router.delete('/:id/answers/:answerId', protectUser, deleteAnswer);
 router.delete('/:id', protectUser, deleteQuestion);
 router.get('/admin', protect, getQuestionsAdmin);
 router.delete('/admin/:id', protect, deleteQuestionAdmin);
