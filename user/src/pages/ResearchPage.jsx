@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import { getPublicArticleById, getPublicArticles, getPublicFileUrl } from "../services/publicApi";
-import placeholderImage from "../assets/HeroSection1.webp";
+import defaultPaperImage from "../assets/default-paper.svg";
 
 function ResearchCard({ item, onOpen }) {
   return (
@@ -163,7 +163,7 @@ export default function ResearchPage() {
                   key={item._id || item.title}
                   item={{
                     ...item,
-                    image: item.image || placeholderImage,
+                    image: item.image || defaultPaperImage,
                     date: formatDate(item.publishedDate || item.createdAt),
                   }}
                   onOpen={() => openResearch(item._id)}
@@ -205,7 +205,7 @@ export default function ResearchPage() {
             ) : selectedResearch ? (
               <div className="px-6 py-6">
                 <img
-                  src={selectedResearch.image || placeholderImage}
+                  src={selectedResearch.image || defaultPaperImage}
                   alt={selectedResearch.title}
                   className="h-72 w-full rounded-2xl object-cover"
                 />

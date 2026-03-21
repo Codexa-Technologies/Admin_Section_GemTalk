@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getPublicArticleById, getPublicArticles, getPublicFileUrl } from "../services/publicApi";
-import placeholderImage from "../assets/HeroSection1.webp";
+import defaultPaperImage from "../assets/default-paper.svg";
 
 function ArticleCard({ item, onOpen }) {
   return (
@@ -141,7 +141,7 @@ export default function LatestArticles() {
                 item={{
                   ...item,
                   id: item._id,
-                  image: item.image || placeholderImage,
+                  image: item.image || defaultPaperImage,
                   date: formatDate(item.publishedDate || item.createdAt),
                 }}
                 onOpen={() => openArticle(item._id)}
@@ -177,7 +177,7 @@ export default function LatestArticles() {
             ) : selectedArticle ? (
               <div className="px-6 py-6">
                 <img
-                  src={selectedArticle.image || placeholderImage}
+                  src={selectedArticle.image || defaultPaperImage}
                   alt={selectedArticle.title}
                   className="h-72 w-full rounded-2xl object-cover"
                 />
