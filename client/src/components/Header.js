@@ -11,6 +11,7 @@ const pageTitles = {
   '/manage-articles':  'Manage Articles',
   '/manage-news':      'Manage News',
   '/manage-research':  'Manage Research Papers',
+  '/manage-questions': 'Manage Q & A',
 };
 
 const TopBar = () => {

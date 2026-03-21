@@ -140,3 +140,35 @@ export const deleteArticle = async (token, id, contentType = 'article') => {
 
   return await response.json();
 };
+
+// Q&A Admin Services
+export const getAdminQuestions = async (token, page = 1, limit = 50) => {
+  const response = await fetch(`${API_BASE_URL}/questions/admin?page=${page}&limit=${limit}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw error;
+  }
+
+  return await response.json();
+};
+
+export const deleteAdminQuestion = async (token, id) => {
+  const response = await fetch(`${API_BASE_URL}/questions/admin/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw error;
+  }
+
+  return await response.json();
+};

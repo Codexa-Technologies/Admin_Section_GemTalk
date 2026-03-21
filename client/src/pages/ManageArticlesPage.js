@@ -58,6 +58,7 @@ const fmtSize  = b => b ? `${(b / 1024 / 1024).toFixed(2)} MB` : '—';
 const getTypeLabel = (type) => {
   if (type === 'research') return 'Research';
   if (type === 'article') return 'Article';
+  if (type === 'event') return 'Event';
   return 'News';
 };
 
@@ -169,10 +170,15 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
   );
 
   /* ── Table Row ──────────────────────────────────────── */
+  const resolveItemType = (item) => {
+    if (defaultType === 'news') return item.type || 'news';
+    return defaultType || item.type || 'article';
+  };
+
   const TableRow = ({ article, idx }) => {
     const isExpanded = expandedRow === article._id;
     const isSelected = selected.includes(article._id);
-    const itemType = defaultType || article.type || 'article';
+    const itemType = resolveItemType(article);
     return (
       <>
         <tr className={`${isSelected ? 'row-selected' : ''}${isExpanded ? ' row-expanded' : ''}`}>
@@ -228,7 +234,7 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
   const CardItem = ({ article, idx }) => {
     const isSelected = selected.includes(article._id);
     const isExpanded = expandedRow === article._id;
-    const itemType = defaultType || article.type || 'article';
+    const itemType = resolveItemType(article);
     return (
       <div className={`article-card${isSelected ? ' article-card--selected' : ''}`}>
         <div className="article-card-top">

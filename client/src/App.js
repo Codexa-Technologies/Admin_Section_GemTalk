@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import AddArticlePage from './pages/AddArticlePage';
 import ManageArticlesPage from './pages/ManageArticlesPage';
+import ManageQuestionsPage from './pages/ManageQuestionsPage';
 import './styles/index.css';
 
 function App() {
@@ -90,6 +91,17 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <ManageArticlesPage defaultType="research" />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manage-questions"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ManageQuestionsPage />
                 </Layout>
               </ProtectedRoute>
             }

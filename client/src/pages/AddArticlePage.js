@@ -101,13 +101,19 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
   const applyImage = (file) => { if (file && validateImage(file)) { setFormData(p => ({ ...p, image: file })); setError(''); } };
   const applyImages = (files) => {
     if (!files) return;
-    const list = Array.from(files).slice(0,5);
-    for (const f of list) {
+    const incoming = Array.from(files);
+    const merged = [...(formData.images || []), ...incoming];
+    const limited = merged.slice(0, 5);
+    if (merged.length > 5) {
+      setError('You can upload up to 5 images');
+    }
+    for (const f of limited) {
       if (!f.type.startsWith('image/')) { setError('Only image files are allowed'); return; }
       if (f.size > 5 * 1024 * 1024) { setError('Each image must be less than 5MB'); return; }
     }
-    setFormData(p => ({ ...p, images: list }));
+    setFormData(p => ({ ...p, images: limited }));
     setError('');
+    if (imagesInputRef.current) imagesInputRef.current.value = '';
   };
 
   const handleDrop = e => { e.preventDefault(); setDragOver(false); applyPdf(e.dataTransfer.files[0]); };

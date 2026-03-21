@@ -24,6 +24,7 @@ app.use('/api/users', require('./routes/userAuthRoutes'));
 app.use('/api/articles', require('./routes/articleRoutes'));
 app.use('/api/news', require('./routes/newsRoutes'));
 app.use('/api/research', require('./routes/researchRoutes'));
+app.use('/api/questions', require('./routes/questionRoutes'));
 
 // Public routes (no authentication required)
 app.use('/api/public/articles', require('./routes/publicArticleRoutes'));

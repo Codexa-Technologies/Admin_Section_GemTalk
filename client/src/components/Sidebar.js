@@ -34,6 +34,13 @@ const icons = {
       <polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
     </svg>
   ),
+  qa: (
+    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16v12H7l-3 3z" />
+      <path d="M8 9h8" />
+      <path d="M8 13h5" />
+    </svg>
+  ),
   logout: (
     <svg style={{width:14,height:14,flexShrink:0}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -63,6 +70,7 @@ const navSections = [
       { path: '/manage-articles',  label: 'Manage Articles',        icon: icons.manage },
       { path: '/manage-news',      label: 'Manage News',            icon: icons.news },
       { path: '/manage-research',  label: 'Manage Research Papers', icon: icons.research },
+      { path: '/manage-questions', label: 'Manage Q & A',           icon: icons.qa },
     ],
   },
 ];

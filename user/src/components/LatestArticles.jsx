@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPublicArticles } from "../services/publicApi";
+import { getPublicArticleById, getPublicArticles, getPublicFileUrl } from "../services/publicApi";
 import placeholderImage from "../assets/HeroSection1.webp";
 
-function ArticleCard({ item }) {
+function ArticleCard({ item, onOpen }) {
   return (
-    <Link
-      to={item.id ? `/articles/${item.id}` : "/articles"}
-      className="group relative block overflow-hidden rounded-3xl bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1"
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group relative w-full overflow-hidden rounded-3xl bg-white text-left shadow-lg transition-transform duration-200 hover:-translate-y-1"
     >
       <div className="h-48 w-full">
         <img
@@ -25,7 +26,7 @@ function ArticleCard({ item }) {
           Read
         </span>
       </div>
-    </Link>
+    </button>
   );
 }
 
@@ -33,6 +34,9 @@ export default function LatestArticles() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -68,6 +72,46 @@ export default function LatestArticles() {
     });
   };
 
+  const openArticle = async (id) => {
+    if (!id) return;
+    try {
+      setModalLoading(true);
+      setModalError("");
+      const response = await getPublicArticleById(id, "article");
+      setSelectedArticle(response.data || null);
+    } catch (err) {
+      setModalError(err?.message || "Failed to load article");
+      setSelectedArticle(null);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedArticle(null);
+    setModalError("");
+    setModalLoading(false);
+  };
+
+  const handleDownload = async (url, title) => {
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Download failed");
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `${title || "article"}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      setModalError(err?.message || "Download failed");
+    }
+  };
+
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-7xl px-6">
@@ -100,11 +144,84 @@ export default function LatestArticles() {
                   image: item.image || placeholderImage,
                   date: formatDate(item.publishedDate || item.createdAt),
                 }}
+                onOpen={() => openArticle(item._id)}
               />
             ))}
           </div>
         )}
       </div>
+
+      {(selectedArticle || modalLoading || modalError) && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-lg font-semibold text-gray-900">Article Details</h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            {modalLoading ? (
+              <div className="px-6 py-8 text-sm text-slate-500">Loading article...</div>
+            ) : modalError ? (
+              <div className="px-6 py-8 text-sm text-red-500">{modalError}</div>
+            ) : selectedArticle ? (
+              <div className="px-6 py-6">
+                <img
+                  src={selectedArticle.image || placeholderImage}
+                  alt={selectedArticle.title}
+                  className="h-72 w-full rounded-2xl object-cover"
+                />
+                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#1e95b5]">
+                  {formatDate(selectedArticle.publishedDate || selectedArticle.createdAt)}
+                </p>
+                <h4 className="mt-2 text-2xl font-extrabold text-gray-900">
+                  {selectedArticle.title}
+                </h4>
+                <p className="mt-4 text-base leading-7 text-gray-600">
+                  {selectedArticle.description}
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-4">
+                  {selectedArticle.pdf && (
+                    <a
+                      href={getPublicFileUrl(selectedArticle.pdf)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]"
+                    >
+                      View PDF
+                    </a>
+                  )}
+                  {selectedArticle.pdf && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDownload(
+                          getPublicFileUrl(selectedArticle.pdf),
+                          selectedArticle.title
+                        )
+                      }
+                      className="rounded-md border border-[#1e95b5] px-6 py-3 text-sm font-semibold text-[#1e95b5] transition-colors hover:bg-[#1e95b5] hover:text-white"
+                    >
+                      Download
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
