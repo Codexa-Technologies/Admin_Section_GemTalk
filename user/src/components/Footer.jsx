@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import instaOne from "../assets/HeroSection1.webp";
 import instaTwo from "../assets/HeroSection2.jpg";
@@ -12,7 +13,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-12 px-6 md:grid-cols-2 md:gap-16 xl:grid-cols-4 xl:gap-20">
         <div>
           <div className="flex items-center gap-3">
-            <img src={logo} alt="GemTalk logo" className="h-10 w-auto" />
+            <img src={logo} alt="GemTalk logo" className="h-12 w-auto" />
           </div>
           <p className="mt-4 text-sm leading-6 text-gray-600">
             Explore the world of gems with us. Connect through our social
@@ -63,30 +64,40 @@ export default function Footer() {
           <h4 className="text-lg font-semibold text-gray-900">Services</h4>
           <ul className="mt-4 space-y-3 text-sm text-gray-600">
             <li>
-              <a className="transition-colors hover:text-[#1e95b5]" href="#">
+              <Link className="transition-colors hover:text-[#1e95b5]" to="/">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a className="transition-colors hover:text-[#1e95b5]" href="#">
+              <Link
+                className="transition-colors hover:text-[#1e95b5]"
+                to="/articles"
+              >
                 Articles
-              </a>
+              </Link>
             </li>
             <li>
-              <a className="transition-colors hover:text-[#1e95b5]" href="#">
+              <Link
+                className="transition-colors hover:text-[#1e95b5]"
+                to="/research"
+              >
                 Research
-              </a>
+              </Link>
             </li>
             <li>
-              <a className="transition-colors hover:text-[#1e95b5]" href="#">
+              <Link className="transition-colors hover:text-[#1e95b5]" to="/news">
                 News
-              </a>
+              </Link>
             </li>
             <li>
-              <a className="transition-colors hover:text-[#1e95b5]" href="#">
-                Contact
-              </a>
+              <Link
+                className="transition-colors hover:text-[#1e95b5]"
+                to="/events"
+              >
+                Events
+              </Link>
             </li>
+            
           </ul>
         </div>
 

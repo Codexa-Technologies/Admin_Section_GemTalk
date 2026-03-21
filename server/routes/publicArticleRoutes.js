@@ -11,7 +11,7 @@ const newsCtrl = createController(News, { hasPdf: false, hasImage: true, imageRe
 const researchCtrl = createController(ResearchPaper, { hasPdf: true, hasImage: true });
 
 const getControllerByType = (type = 'article') => {
-	if (type === 'news') return newsCtrl;
+	if (type === 'news' || type === 'event') return newsCtrl;
 	if (type === 'research') return researchCtrl;
 	return articleCtrl;
 };

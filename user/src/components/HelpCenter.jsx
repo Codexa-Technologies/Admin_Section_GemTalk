@@ -2,7 +2,7 @@ import contactImage from "../assets/helpCenter2.webp";
 
 export default function HelpCenter() {
   return (
-    <section className="bg-[#074E67] py-16">
+    <section id="help-center" className="bg-[#074E67] py-16">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-10 px-6 lg:flex-row lg:items-start lg:gap-16">
         <div className="relative flex-1">
           <div className="absolute -bottom-6 -right-6 hidden h-full w-full rounded-[32px] bg-white/15 lg:block" />

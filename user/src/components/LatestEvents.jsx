@@ -1,30 +1,7 @@
-import eventOne from "../assets/HeroSection1.webp";
-import eventTwo from "../assets/HeroSection2.jpg";
-import eventThree from "../assets/HeroSection3.jpg";
-import eventFour from "../assets/helpcenter.webp";
-
-const events = [
-  {
-    title: "Gem Expo 2026",
-    date: "21 Mar 2026",
-    image: eventOne,
-  },
-  {
-    title: "Research Symposium",
-    date: "12 Mar 2026",
-    image: eventTwo,
-  },
-  {
-    title: "Gem Cutting Workshop",
-    date: "05 Mar 2026",
-    image: eventThree,
-  },
-  {
-    title: "Ethical Mining Summit",
-    date: "01 Mar 2026",
-    image: eventFour,
-  },
-];
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getPublicArticles } from "../services/publicApi";
+import placeholderImage from "../assets/HeroSection1.webp";
 
 function EventCard({ item }) {
   return (
@@ -39,15 +16,56 @@ function EventCard({ item }) {
       <div className="p-5">
         <p className="text-xs font-semibold text-[#1e95b5]">{item.date}</p>
         <h3 className="mt-2 text-lg font-bold text-gray-900">{item.title}</h3>
-        <button className="mt-4 text-sm font-semibold text-[#1e95b5] transition-colors hover:text-[#167d97]">
+        <Link
+          to="/events"
+          className="mt-4 inline-block text-sm font-semibold text-[#1e95b5] transition-colors hover:text-[#167d97]"
+        >
           Read More
-        </button>
+        </Link>
       </div>
     </div>
   );
 }
 
 export default function LatestEvents() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadEvents = async () => {
+      try {
+        const response = await getPublicArticles({ limit: 4, type: "event" });
+        if (!isMounted) return;
+        setEvents(response.articles || []);
+        setError("");
+      } catch (err) {
+        if (!isMounted) return;
+        setError(err?.message || "Failed to load events");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadEvents();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const formatDate = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <section className="bg-[#074E67] py-16">
       <div className="mx-auto max-w-7xl px-6">
@@ -55,16 +73,34 @@ export default function LatestEvents() {
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
             Latest <span className="text-[#7fd3e6]">Events</span>
           </h2>
-          <button className="self-start rounded-md border border-[#7fd3e6] px-6 py-3 text-sm font-semibold text-[#7fd3e6] transition-colors hover:bg-[#7fd3e6] hover:text-[#074E67] md:self-auto">
+          <Link
+            to="/events"
+            className="self-start rounded-md border border-[#7fd3e6] px-6 py-3 text-sm font-semibold text-[#7fd3e6] transition-colors hover:bg-[#7fd3e6] hover:text-[#074E67] md:self-auto"
+          >
             See More
-          </button>
+          </Link>
         </div>
 
-        <div className="mt-10 grid gap-8 md:grid-cols-4">
-          {events.map((item) => (
-            <EventCard key={item.title} item={item} />
-          ))}
-        </div>
+        {loading ? (
+          <p className="mt-10 text-sm text-[#d8eff5]">Loading events...</p>
+        ) : error ? (
+          <p className="mt-10 text-sm text-[#ffd7d7]">{error}</p>
+        ) : events.length === 0 ? (
+          <p className="mt-10 text-sm text-[#d8eff5]">No events found.</p>
+        ) : (
+          <div className="mt-10 grid gap-8 md:grid-cols-4">
+            {events.map((item) => (
+              <EventCard
+                key={item._id || item.title}
+                item={{
+                  ...item,
+                  image: item.image || item.images?.[0]?.url || placeholderImage,
+                  date: formatDate(item.eventDate || item.publishedDate || item.createdAt),
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

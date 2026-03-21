@@ -19,7 +19,9 @@ const memoryStorage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   if (file.fieldname === 'pdf' && file.mimetype === 'application/pdf') return cb(null, true);
-  if (file.fieldname === 'image' && file.mimetype.startsWith('image/')) return cb(null, true);
+  if ((file.fieldname === 'image' || file.fieldname === 'images') && file.mimetype.startsWith('image/')) {
+    return cb(null, true);
+  }
   cb(new Error('Invalid file type'), false);
 };
 

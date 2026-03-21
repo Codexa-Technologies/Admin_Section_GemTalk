@@ -1,36 +1,7 @@
-import newsOne from "../assets/HeroSection1.webp";
-import newsTwo from "../assets/HeroSection2.jpg";
-import newsThree from "../assets/HeroSection3.jpg";
-import newsFour from "../assets/helpcenter.webp";
-import newsFive from "../assets/helpCenter2.webp";
-
-const newsItems = [
-  {
-    title: "Gem Expo 2026 Highlights",
-    date: "21 Mar 2026",
-    image: newsOne,
-  },
-  {
-    title: "New Research Grants Announced",
-    date: "18 Mar 2026",
-    image: newsTwo,
-  },
-  {
-    title: "Sapphire Market Update",
-    date: "15 Mar 2026",
-    image: newsThree,
-  },
-  {
-    title: "Field Trip to Ratnapura",
-    date: "10 Mar 2026",
-    image: newsFour,
-  },
-  {
-    title: "Workshop: Gem Cutting 101",
-    date: "06 Mar 2026",
-    image: newsFive,
-  },
-];
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getPublicArticles } from "../services/publicApi";
+import placeholderImage from "../assets/HeroSection1.webp";
 
 function NewsCard({ item }) {
   return (
@@ -47,6 +18,51 @@ function NewsCard({ item }) {
 }
 
 export default function LatestNews() {
+  const [newsItems, setNewsItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadNews = async () => {
+      try {
+        const response = await getPublicArticles({ limit: 8, type: "news" });
+        if (!isMounted) return;
+        setNewsItems(response.articles || []);
+        setError("");
+      } catch (err) {
+        if (!isMounted) return;
+        setError(err?.message || "Failed to load news");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadNews();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const formatDate = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const displayItems = newsItems.map((item) => ({
+    ...item,
+    image: item.image || placeholderImage,
+    date: formatDate(item.publishedDate || item.createdAt),
+  }));
+  const shouldScroll = displayItems.length >= 5;
+
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-7xl px-6">
@@ -54,48 +70,66 @@ export default function LatestNews() {
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
             Latest <span className="text-[#1e95b5]">News</span>
           </h2>
-          <button className="self-start rounded-md border border-[#1e95b5] px-6 py-3 text-sm font-semibold text-[#1e95b5] transition-colors hover:bg-[#1e95b5] hover:text-white md:self-auto">
+          <Link
+            to="/news"
+            className="self-start rounded-md border border-[#1e95b5] px-6 py-3 text-sm font-semibold text-[#1e95b5] transition-colors hover:bg-[#1e95b5] hover:text-white md:self-auto"
+          >
             See More
-          </button>
+          </Link>
         </div>
 
-        <div className="mt-10 overflow-hidden pb-4">
-          <div className="news-track">
-            <div className="news-row">
-              {newsItems.map((item) => (
-                <NewsCard key={`news-${item.title}`} item={item} />
-              ))}
-            </div>
-            <div className="news-row" aria-hidden="true">
-              {newsItems.map((item) => (
-                <NewsCard key={`news-dup-${item.title}`} item={item} />
-              ))}
+        {loading ? (
+          <p className="mt-10 text-sm text-slate-500">Loading news...</p>
+        ) : error ? (
+          <p className="mt-10 text-sm text-red-500">{error}</p>
+        ) : displayItems.length === 0 ? (
+          <p className="mt-10 text-sm text-slate-500">No news found.</p>
+        ) : shouldScroll ? (
+          <div className="mt-10 overflow-hidden pb-4">
+            <div className="news-track">
+              <div className="news-row">
+                {displayItems.map((item) => (
+                  <NewsCard key={`news-${item._id || item.title}`} item={item} />
+                ))}
+              </div>
+              <div className="news-row" aria-hidden="true">
+                {displayItems.map((item) => (
+                  <NewsCard key={`news-dup-${item._id || item.title}`} item={item} />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {displayItems.map((item) => (
+              <NewsCard key={`news-${item._id || item.title}`} item={item} />
+            ))}
+          </div>
+        )}
       </div>
-
-      <style>{`
-        @keyframes news-scroll {
-          0% {
-            transform: translateX(0);
+      {shouldScroll && (
+        <style>{`
+          @keyframes news-scroll {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
           }
-          100% {
-            transform: translateX(-50%);
+          .news-track {
+            display: flex;
+            width: max-content;
+            animation: news-scroll 30s linear infinite;
+            will-change: transform;
           }
-        }
-        .news-track {
-          display: flex;
-          width: max-content;
-          animation: news-scroll 30s linear infinite;
-          will-change: transform;
-        }
-        .news-row {
-          display: flex;
-          gap: 1.5rem;
-          padding-right: 1.5rem;
-        }
-      `}</style>
+          .news-row {
+            display: flex;
+            gap: 1.5rem;
+            padding-right: 1.5rem;
+          }
+        `}</style>
+      )}
     </section>
   );
 }

@@ -1,8 +1,45 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import heroImageOne from "../assets/HeroSection1.webp";
 import heroImageTwo from "../assets/HeroSection2.jpg";
 import heroImageThree from "../assets/HeroSection3.jpg";
+import { getPublicArticles } from "../services/publicApi";
 
 export default function HeroSection() {
+  const [counts, setCounts] = useState({ articles: 0, research: 0, events: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCounts = async () => {
+      try {
+        const [articlesRes, researchRes, eventsRes] = await Promise.all([
+          getPublicArticles({ limit: 1, type: "article" }),
+          getPublicArticles({ limit: 1, type: "research" }),
+          getPublicArticles({ limit: 1, type: "event" }),
+        ]);
+
+        if (!isMounted) return;
+        setCounts({
+          articles: articlesRes?.pagination?.totalCount ?? 0,
+          research: researchRes?.pagination?.totalCount ?? 0,
+          events: eventsRes?.pagination?.totalCount ?? 0,
+        });
+      } catch (error) {
+        if (!isMounted) return;
+        setCounts({ articles: 0, research: 0, events: 0 });
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadCounts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <main className="bg-white">
       <section className="relative overflow-hidden">
@@ -19,26 +56,38 @@ export default function HeroSection() {
               to the brilliance revealed through expert cutting, gemology uncovers the natural processes that create these stunning treasures and their lasting beauty.
             </p>
             <div className="mt-7 flex flex-wrap gap-4">
-              <button className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]">
+              <Link
+                to="/articles"
+                className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]"
+              >
                 View Articals
-              </button>
-              <button className="rounded-md border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors duration-200 hover:border-[#1e95b5] hover:text-[#1e95b5]">
-                Contact Us
-              </button>
+              </Link>
+              <a
+                href="/#help-center"
+                className="rounded-md border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors duration-200 hover:border-[#1e95b5] hover:text-[#1e95b5]"
+              >
+                Help Center
+              </a>
             </div>
 
             <div className="mx-auto mt-10 grid w-full max-w-lg grid-cols-3 gap-4 rounded-2xl bg-white px-5 py-4 text-center shadow-lg ring-1 ring-gray-100">
               <div>
                 <p className="text-xs font-semibold text-gray-500">Articles</p>
-                <p className="text-2xl font-extrabold text-gray-800">120+</p>
+                <p className="text-2xl font-extrabold text-gray-800">
+                  {loading ? "--" : counts.articles}
+                </p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-500">Research</p>
-                <p className="text-2xl font-extrabold text-gray-800">45</p>
+                <p className="text-2xl font-extrabold text-gray-800">
+                  {loading ? "--" : counts.research}
+                </p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-500">Events</p>
-                <p className="text-2xl font-extrabold text-gray-800">30</p>
+                <p className="text-2xl font-extrabold text-gray-800">
+                  {loading ? "--" : counts.events}
+                </p>
               </div>
             </div>
           </div>

@@ -81,7 +81,7 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       if (hasPdf && !pdfFile) {
         return res.status(400).json({ success: false, message: 'Please upload a PDF file' });
       }
-      if (imageRequired && !imageFile) {
+      if (imageRequired && !imageFile && !(type === 'event' && imagesFiles?.length)) {
         if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
         return res.status(400).json({ success: false, message: 'Please upload a cover image' });
       }
@@ -99,6 +99,11 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
             uploadedImages.push({ url: r.secure_url, publicId: r.public_id, fileName: f.originalname, fileSize: f.size });
           }
         }
+      }
+
+      if (!imageUrl && uploadedImages.length) {
+        imageUrl = uploadedImages[0].url;
+        imagePublicId = uploadedImages[0].publicId;
       }
 
       const doc = {
@@ -183,6 +188,14 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
           }
         }
         item.images = newImages;
+
+        if (newImages.length && (!item.image || req.body.type === 'event')) {
+          if (item.imagePublicId) {
+            await deleteCloudinaryImage(item.imagePublicId);
+          }
+          item.image = newImages[0].url;
+          item.imagePublicId = newImages[0].publicId;
+        }
       }
 
       item = await item.save();
@@ -236,7 +249,9 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       const skip      = (page - 1) * limit;
 
       let filter = {};
-      if (req.query.type) filter.type = req.query.type;
+      if (req.query.type && Model.schema.path('type')) {
+        filter.type = req.query.type;
+      }
       if (search) filter.$or = [{ title: { $regex: search, $options: 'i' } }, { description: { $regex: search, $options: 'i' } }];
 
       const allowedSort = { createdAt: 'createdAt', title: 'title' };
