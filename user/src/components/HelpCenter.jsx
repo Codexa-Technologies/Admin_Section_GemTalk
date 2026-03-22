@@ -1,4 +1,4 @@
-import contactImage from "../assets/helpCenter2.webp";
+import contactImage from "../assets/cover-03.jpg";
 
 export default function HelpCenter() {
   return (
