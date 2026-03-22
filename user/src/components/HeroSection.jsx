@@ -41,84 +41,90 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <main className="bg-white">
-      <section className="relative overflow-hidden">
-        <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 pb-16 pt-10 lg:flex-row lg:items-center lg:gap-14">
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#1e95b5]/30 bg-[#1e95b5]/5 px-3 py-1 text-xs font-semibold text-[#1e95b5]">
-              Gemology Sri Lanka
-            </div>
-            <h1 className="mt-6 text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl">
-              The Science Behind Precious Stones
-            </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-gray-600">
-              Explore the fascinating science behind precious stones found in Sri Lanka. From deep underground formations shaped by heat and pressure
-              to the brilliance revealed through expert cutting, gemology uncovers the natural processes that create these stunning treasures and their lasting beauty.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-4">
-              <Link
-                to="/articles"
-                className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]"
-              >
-                View Articals
-              </Link>
-              <a
-                href="/#help-center"
-                className="rounded-md border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 transition-colors duration-200 hover:border-[#1e95b5] hover:text-[#1e95b5]"
-              >
-                Help Center
-              </a>
-            </div>
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#042d3e] via-[#074E67] to-[#05878A]">
+      {/* Decorative blobs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-[#05878A]/20 blur-3xl" />
+        <div className="absolute -bottom-24 left-[20%] h-80 w-80 rounded-full bg-[#074E67]/30 blur-3xl" />
+        <div className="absolute top-1/2 right-[10%] h-48 w-48 rounded-full bg-white/5 blur-2xl" />
+      </div>
 
-            <div className="mx-auto mt-10 grid w-full max-w-lg grid-cols-3 gap-4 rounded-2xl bg-white px-5 py-4 text-center shadow-lg ring-1 ring-gray-100">
-              <div>
-                <p className="text-xs font-semibold text-gray-500">Articles</p>
-                <p className="text-2xl font-extrabold text-gray-800">
-                  {loading ? "--" : counts.articles}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500">Research</p>
-                <p className="text-2xl font-extrabold text-gray-800">
-                  {loading ? "--" : counts.research}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500">Events</p>
-                <p className="text-2xl font-extrabold text-gray-800">
-                  {loading ? "--" : counts.events}
-                </p>
-              </div>
-            </div>
+      <div className="relative mx-auto flex max-w-7xl flex-col gap-12 px-6 pb-20 pt-16 lg:flex-row lg:items-center lg:gap-16">
+        {/* Left */}
+        <div className="flex-1 text-white">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-white/90 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#7ef0f2]" />
+            Gemology Sri Lanka
+          </div>
+          <h1 className="mt-6 text-4xl font-black leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
+            The Science Behind{" "}
+            <span className="bg-gradient-to-r from-[#7ef0f2] to-[#a8f5e8] bg-clip-text text-transparent">
+              Precious Stones
+            </span>
+          </h1>
+          <p className="mt-5 max-w-lg text-base leading-7 text-white/75">
+            Explore the fascinating science behind precious stones found in Sri Lanka. From deep underground formations shaped by heat and pressure
+            to the brilliance revealed through expert cutting, gemology uncovers the natural processes that create these stunning treasures.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link
+              to="/articles"
+              className="rounded-full bg-white px-7 py-3 text-sm font-bold text-[#074E67] shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              View Articles
+            </Link>
+            <a
+              href="/#help-center"
+              className="rounded-full border border-white/30 bg-white/10 px-7 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"
+            >
+              Help Center
+            </a>
           </div>
 
-          <div className="flex-1">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="hidden sm:block">
-                <img
-                  src={heroImageOne}
-                  alt="Sri Lanka landscape"
-                  className="h-80 w-full rounded-2xl object-cover shadow-md"
-                />
+          {/* Stats */}
+          <div className="mt-10 flex gap-px overflow-hidden rounded-2xl border border-white/15 bg-white/10 backdrop-blur-sm w-fit">
+            {[
+              { label: "Articles", value: counts.articles },
+              { label: "Research", value: counts.research },
+              { label: "Events", value: counts.events },
+            ].map((stat, i) => (
+              <div key={stat.label} className={`px-7 py-4 text-center ${
+                i !== 2 ? "border-r border-white/15" : ""
+              }`}>
+                <p className="text-2xl font-black text-white">{loading ? "--" : stat.value}</p>
+                <p className="mt-0.5 text-xs font-semibold uppercase tracking-wider text-white/60">{stat.label}</p>
               </div>
-              <div className="hidden rounded-2xl bg-gray-100 p-1 shadow-md sm:block">
-                <img
-                  src={heroImageTwo}
-                  alt="Tea garden"
-                  className="h-80 w-full rounded-2xl object-cover"
-                />
-              </div>
-              <div className="col-span-2 rounded-2xl bg-gray-100 p-1 shadow-md">
-                <img
-                  src={heroImageThree}
-                  alt="Gem mining"
-                  className="h-56 w-full rounded-2xl object-cover"
-                />
-              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right */}
+        <div className="flex-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="hidden sm:block">
+              <img
+                src={heroImageOne}
+                alt="Gemstone"
+                className="h-72 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
+              />
+            </div>
+            <div className="hidden sm:block">
+              <img
+                src={heroImageTwo}
+                alt="Gemstone research"
+                className="h-72 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
+              />
+            </div>
+            <div className="col-span-2">
+              <img
+                src={heroImageThree}
+                alt="Gem mining"
+                className="h-52 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
+              />
             </div>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
