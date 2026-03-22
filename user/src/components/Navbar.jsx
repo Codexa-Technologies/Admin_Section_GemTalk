@@ -57,7 +57,7 @@ export default function Navbar({ onLoginClick = () => {} }) {
           <img
             src={logo}
             alt="GemTalk"
-            className="h-14 w-auto transition-transform duration-300 hover:scale-110"
+            className="h-10 w-auto transition-transform duration-300 hover:scale-110"
           />
         </Link>
 

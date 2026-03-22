@@ -28,14 +28,20 @@ export default function HelpCenter() {
             Our team can also assist with itinerary ideas, travel tips, and
             local recommendations to make your experience smooth and memorable.
           </p>
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a
               href="https://wa.me/94775532053"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#1da851]"
+                className="inline-flex w-40 items-center justify-center gap-2 rounded-md bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#1da851]"
             >
               WhatsApp Us
+            </a>
+            <a
+              href="https://wa.me/94775532053"
+              className="inline-flex w-44 items-center justify-center gap-2 rounded-md bg-[#006B3C] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#005b34]"
+            >
+              Group Chat
             </a>
           </div>
         </div>
@@ -43,3 +49,5 @@ export default function HelpCenter() {
     </section>
   );
 }
+
+             
