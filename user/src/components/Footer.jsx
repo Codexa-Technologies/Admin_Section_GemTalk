@@ -88,7 +88,7 @@ export default function Footer() {
           <ul className="mt-4 space-y-4 text-sm text-gray-600">
             <li>
               <a
-                href="https://wa.me/94775532053"
+                href="https://wa.me/94766900767"
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-3 transition-colors hover:text-[#1e95b5]"

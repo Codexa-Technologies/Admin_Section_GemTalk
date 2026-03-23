@@ -1,4 +1,4 @@
-import contactImage from "../assets/cover-03.jpg";
+import contactImage from "../assets/helpcenter3.jpeg";
 
 export default function HelpCenter() {
   return (
@@ -30,7 +30,7 @@ export default function HelpCenter() {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a
-              href="https://wa.me/94775532053"
+              href="https://wa.me/94766900767"
               target="_blank"
               rel="noreferrer"
                 className="inline-flex w-40 items-center justify-center gap-2 rounded-md bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#1da851]"
@@ -38,8 +38,8 @@ export default function HelpCenter() {
               WhatsApp Us
             </a>
             <a
-              href="https://wa.me/94775532053"
-              className="inline-flex w-44 items-center justify-center gap-2 rounded-md bg-[#006B3C] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#005b34]"
+              href="https://chat.whatsapp.com/Cxi0VdeZO550xKxj1CxYMt?mode=gi_t"
+              className="inline-flex w-40 items-center justify-center gap-2 rounded-md bg-[#006B3C] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#005b34]"
             >
               Group Chat
             </a>

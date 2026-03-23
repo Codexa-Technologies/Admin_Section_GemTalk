@@ -82,17 +82,17 @@ export default function HeroSection() {
           </div>
 
           {/* Stats */}
-          <div className="mt-10 flex gap-px overflow-hidden rounded-2xl border border-white/15 bg-white/10 backdrop-blur-sm w-fit">
+          <div className="mt-10 grid w-full max-w-xl grid-cols-3 overflow-hidden rounded-2xl border border-white/15 bg-white/10 backdrop-blur-sm sm:w-fit">
             {[
               { label: "Articles", value: counts.articles },
               { label: "Research", value: counts.research },
               { label: "Events", value: counts.events },
             ].map((stat, i) => (
-              <div key={stat.label} className={`px-7 py-4 text-center ${
+              <div key={stat.label} className={`px-3 py-3 text-center sm:px-7 sm:py-4 ${
                 i !== 2 ? "border-r border-white/15" : ""
               }`}>
-                <p className="text-2xl font-black text-white">{loading ? "--" : stat.value}</p>
-                <p className="mt-0.5 text-xs font-semibold uppercase tracking-wider text-white/60">{stat.label}</p>
+                <p className="text-xl font-black text-white sm:text-2xl">{loading ? "--" : stat.value}</p>
+                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/60 sm:text-xs">{stat.label}</p>
               </div>
             ))}
           </div>
