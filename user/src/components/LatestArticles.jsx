@@ -10,19 +10,22 @@ function ArticleCard({ item, onOpen }) {
       onClick={onOpen}
       className="group relative w-full overflow-hidden rounded-3xl bg-white text-left shadow-lg transition-transform duration-200 hover:-translate-y-1"
     >
-      <div className="h-48 w-full">
+      <div className="h-48 w-full relative">
         <img
           src={item.image}
           alt={item.title}
           className="h-full w-full object-cover"
         />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-semibold text-lg md:hidden opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity duration-150 pointer-events-none">
+          <span>Read</span>
+        </div>
       </div>
       <div className="p-5">
         <p className="text-xs font-semibold text-[#1e95b5]">{item.date}</p>
-        <h3 className="mt-2 text-lg font-bold text-gray-900 group-hover:text-[#1e95b5]">
+        <h3 className="mt-2 text-lg font-bold text-gray-900 group-hover:text-[#1e95b5] line-clamp-2-mobile">
           {item.title}
         </h3>
-        <span className="absolute bottom-5 right-5 text-sm font-semibold text-[#1e95b5]">
+        <span className="absolute bottom-5 right-5 text-sm font-semibold text-[#1e95b5] hidden md:block">
           Read
         </span>
       </div>

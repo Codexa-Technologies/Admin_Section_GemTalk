@@ -15,3 +15,13 @@ body {
 	-webkit-line-clamp: 1;
 	-webkit-box-orient: vertical;
 }
+
+/* Mobile-only two-line clamp for article titles */
+@media (max-width: 767px) {
+	.line-clamp-2-mobile {
+		overflow: hidden;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+	}
+}

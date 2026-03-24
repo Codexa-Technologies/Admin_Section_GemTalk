@@ -226,7 +226,7 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
             </label>
             <div className="date-input-wrap">
               <input type="date" id="publishedDate" name="publishedDate" value={formData.publishedDate}
-                onChange={handleInput} disabled={loading} max={new Date().toISOString().split('T')[0]} />
+                onChange={handleInput} disabled={loading} {...(formData.type === 'event' ? {} : { max: new Date().toISOString().split('T')[0] })} />
             </div>
           </div>
 
