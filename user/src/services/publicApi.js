@@ -1,6 +1,8 @@
+// Prefer explicit env override. If missing, use current origin (works when frontend and backend share host),
+// otherwise fallback to production URL.
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL ||
-  "https://adminsectiongemtalk-production-9414.up.railway.app/api";
+  (typeof window !== 'undefined' ? window.location.origin : 'https://adminsectiongemtalk-production-9414.up.railway.app') + '/api';
 
 const buildPublicUrl = (path) => `${API_BASE_URL}${path}`;
 const buildFileUrl = (path) => {

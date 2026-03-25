@@ -398,6 +398,91 @@
 .act-delete { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
 .act-delete:hover { background: #c53030; color: #fff; border-color: #c53030; }
 
+/* Hero manager grid */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.hero-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hero-card__img {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.hero-card__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.hero-card__title { font-size: 13px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.hero-card__actions { display: flex; gap: 10px; margin-top: auto; }
+
+@media (max-width: 1100px) {
+  .hero-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .hero-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .hero-grid { grid-template-columns: 1fr; }
+}
+
+/* File chooser */
+.file-chooser { display: flex; align-items: center; gap: 10px; }
+.file-chooser__name { font-size: 13px; color: var(--text-muted); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-chooser .view-btn { padding: 8px 12px; border-radius: 10px; border: none; background: var(--surface); color: var(--text-muted); cursor: pointer; box-shadow: var(--shadow-sm); }
+.file-chooser .view-btn:hover { background: var(--teal-light); color: var(--teal); }
+.file-chooser .bulk-delete-btn { padding: 8px 12px; border-radius: 10px; background: var(--teal); color: #fff; border: none; cursor: pointer; font-weight: 700; }
+.file-chooser .bulk-delete-btn:hover { background: #016b6d; }
+
+/* PDF preview modal */
+.pdf-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 2000;
+  padding: 20px;
+}
+.pdf-modal__content {
+  width: 100%;
+  max-width: 1100px;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--shadow-lg);
+}
+.pdf-modal__content .icon-btn { float: right; margin-left: 8px; }
+
+.pdf-modal__loader {
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-weight: 700;
+  background: rgba(255,255,255,0.02);
+  z-index: 5;
+}
+
 /* ── Card Grid ──────────────────────────────────────── */
 .cards-grid {
   display: grid;

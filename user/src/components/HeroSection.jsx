@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import heroImageOne from "../assets/HeroSection1.webp";
 import heroImageTwo from "../assets/HeroSection2.jpg";
 import heroImageThree from "../assets/HeroSection3.jpg";
-import { getPublicArticles, getHero} from "../services/publicApi";
+import { getPublicArticles, getHero, getPublicFileUrl } from "../services/publicApi";
 
 export default function HeroSection() {
   const [counts, setCounts] = useState({ articles: 0, research: 0, events: 0 });

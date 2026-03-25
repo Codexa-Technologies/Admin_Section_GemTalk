@@ -142,29 +142,7 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
     window.open(resolved, '_blank', 'noopener');
   };
 
-  const handleDownloadPdf = (url, fileName) => {
-    if (!url) return;
-    const resolved = url.startsWith('/') ? `${API_BASE_URL.replace(/\/api$/,'')}${url}` : url;
-    (async () => {
-      try {
-        const res = await fetch(resolved, { mode: 'cors' });
-        if (!res.ok) throw new Error('Failed to fetch file');
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = fileName || '';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(blobUrl);
-      } catch (err) {
-        console.error('Download error', err);
-        // fallback: open in new tab
-        window.open(resolved, '_blank', 'noopener');
-      }
-    })();
-  };
+  
 
   /* Single delete */
   const handleDelete = async (id) => {
@@ -240,7 +218,6 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
             {article.pdf ? (
                 <>
                   <button type="button" className="act-btn act-view" onClick={() => handleViewPdf(article.pdf)}>View</button>
-                  <button type="button" className="act-btn" onClick={() => handleDownloadPdf(article.pdf, article.fileName)}>Download</button>
                 </>
               ) : (
                 <button className="act-btn" disabled>No PDF</button>
@@ -287,6 +264,8 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
 
         <div className="article-card-file">
           <FileIcon />
+
+      {/* PDF preview removed — View now opens PDF in a new tab */}
           <span>{article.fileName || '—'}</span>
         </div>
 
@@ -313,7 +292,6 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
           {article.pdf ? (
             <>
               <button className="act-btn act-view" onClick={() => handleViewPdf(article.pdf)}>View</button>
-              <button className="act-btn" onClick={() => handleDownloadPdf(article.pdf, article.fileName)}>Download</button>
             </>
           ) : (
             <button className="act-btn" disabled>No PDF</button>

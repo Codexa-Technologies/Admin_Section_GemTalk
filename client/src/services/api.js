@@ -1,7 +1,4 @@
-// Allow overriding the backend base URL at build/runtime via REACT_APP_API_URL.
-// If not provided, default to localhost for local development.
-const envBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-export const API_BASE_URL = `${envBase.replace(/\/+$/,'')}/api`;
+export const API_BASE_URL = "https://adminsectiongemtalk-production-9414.up.railway.app/api";
 
 const getContentBasePath = (contentType = 'article') => {
   if (contentType === 'news') return 'news';
