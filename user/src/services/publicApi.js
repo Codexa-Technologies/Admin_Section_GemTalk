@@ -46,7 +46,16 @@ export const getPublicArticleById = async (id, type = "article") => {
   return await response.json();
 };
 
-export const getPublicFileUrl = (path) => buildFileUrl(path);
+export const getPublicFileUrl = (path) => {
+  if (!path) return '';
+  // If path is already an absolute URL, use server proxy to control headers
+  const fileUrl = path;
+  const filename = (() => {
+    try { const parts = (new URL(fileUrl)).pathname.split('/'); return parts.pop() || 'file'; } catch (e) { const p = fileUrl.split('/'); return p.pop() || 'file'; }
+  })();
+  const proxyRoot = API_BASE_URL.replace(/\/api$/, '');
+  return `${proxyRoot}/api/public/file?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(filename)}`;
+};
 
 export const getHero = async () => {
   const response = await fetch(buildPublicUrl(`/hero`));

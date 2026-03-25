@@ -28,6 +28,8 @@ app.use('/api/questions', require('./routes/questionRoutes'));
 
 // Public routes (no authentication required)
 app.use('/api/public/articles', require('./routes/publicArticleRoutes'));
+// Proxy route to serve external files with inline content-disposition
+app.use('/api/public', require('./routes/publicFileRoutes'));
 
 // Hero config (public + admin)
 app.use('/api/hero', require('./routes/heroRoutes'));

@@ -99,23 +99,13 @@ export default function ArticleDetailPage() {
 
             <div className="mt-8 flex flex-wrap gap-4">
               {pdfUrl && (
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => window.open(pdfUrl, '_blank', 'noopener')}
                   className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]"
                 >
                   View PDF
-                </a>
-              )}
-              {pdfUrl && (
-                <a
-                  href={pdfUrl}
-                  download
-                  className="rounded-md border border-[#1e95b5] px-6 py-3 text-sm font-semibold text-[#1e95b5] transition-colors hover:bg-[#1e95b5] hover:text-white"
-                >
-                  Download
-                </a>
+                </button>
               )}
             </div>
           </div>
