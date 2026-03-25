@@ -42,4 +42,36 @@ router.get('/:id', async (req, res) => {
 	}
 });
 
+// Public download redirect for PDF (no auth)
+router.get('/:id/download', async (req, res) => {
+	try {
+		const type = (req.query.type || '').toLowerCase();
+		if (type) {
+			// If a type is provided, use the controller for that type
+			const ctrl = getControllerByType(type);
+			const item = await (type === 'news' ? require('../models/News') : type === 'research' ? require('../models/ResearchPaper') : require('../models/Article')).findById(req.params.id);
+			if (!item || !item.pdf) return res.status(404).json({ success: false, message: 'Not found' });
+			return res.redirect(item.pdf);
+		}
+
+		if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) {
+			return res.status(404).json({ success: false, message: 'Not found' });
+		}
+
+		const Article = require('../models/Article');
+		const News = require('../models/News');
+		const ResearchPaper = require('../models/ResearchPaper');
+
+		const item =
+			(await Article.findById(req.params.id)) ||
+			(await News.findById(req.params.id)) ||
+			(await ResearchPaper.findById(req.params.id));
+
+		if (!item || !item.pdf) return res.status(404).json({ success: false, message: 'Not found' });
+		return res.redirect(item.pdf);
+	} catch (error) {
+		return res.status(500).json({ success: false, message: error.message });
+	}
+});
+
 module.exports = router;

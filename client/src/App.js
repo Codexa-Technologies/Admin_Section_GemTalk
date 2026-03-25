@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import AddArticlePage from './pages/AddArticlePage';
 import ManageArticlesPage from './pages/ManageArticlesPage';
 import ManageQuestionsPage from './pages/ManageQuestionsPage';
+import ManageHeroPage from './pages/ManageHeroPage';
 import './styles/index.css';
 
 function App() {
@@ -102,6 +103,17 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <ManageQuestionsPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manage-hero"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ManageHeroPage />
                 </Layout>
               </ProtectedRoute>
             }

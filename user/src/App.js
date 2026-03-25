@@ -8,7 +8,7 @@ import LatestResearch from './components/LatestResearch';
 import LatestNews from './components/LatestNews';
 import LatestEvents from './components/LatestEvents';
 import FAQ from './components/FAQ';
-import WebsiteScroller from './components/WebsiteScroller';
+//import WebsiteScroller from './components/WebsiteScroller';
 import HelpCenter from './components/HelpCenter';
 import Footer from './components/Footer';
 import ArticlesPage from './pages/ArticlesPage';
@@ -27,7 +27,6 @@ function HomePage() {
       <LatestNews />
       <LatestEvents />
       <FAQ />
-      <WebsiteScroller />
     </>
   );
 }

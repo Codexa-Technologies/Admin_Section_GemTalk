@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import heroImageOne from "../assets/HeroSection1.webp";
 import heroImageTwo from "../assets/HeroSection2.jpg";
 import heroImageThree from "../assets/HeroSection3.jpg";
-import { getPublicArticles } from "../services/publicApi";
+import { getPublicArticles, getHero, getPublicFileUrl } from "../services/publicApi";
 
 export default function HeroSection() {
   const [counts, setCounts] = useState({ articles: 0, research: 0, events: 0 });
@@ -39,6 +39,58 @@ export default function HeroSection() {
       isMounted = false;
     };
   }, []);
+
+  // Hero images (admin-managed). If admin provided images are available, use them; otherwise use defaults.
+  const [heroImages, setHeroImages] = useState([
+    { url: heroImageOne },
+    { url: heroImageTwo },
+    { url: heroImageThree },
+  ]);
+  const [useSlider, setUseSlider] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const sliderRef = useRef(null);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadHero = async () => {
+      try {
+        const res = await getHero();
+        if (!mounted) return;
+          if (res.success && res.data && Array.isArray(res.data.images) && res.data.images.length > 0) {
+            // admin provided images -> enable slider
+            const imgs = res.data.images.map(i => ({ url: i.url }));
+            setHeroImages(imgs);
+            setUseSlider(true);
+            setActiveIdx(0);
+          } else {
+            // keep defaults and disable slider
+            setHeroImages([ { url: heroImageOne }, { url: heroImageTwo }, { url: heroImageThree } ]);
+            setUseSlider(false);
+            setActiveIdx(0);
+          }
+      } catch (e) {
+        // on error keep defaults
+        if (!mounted) return;
+        setHeroImages([ { url: heroImageOne }, { url: heroImageTwo }, { url: heroImageThree } ]);
+        setActiveIdx(0);
+      }
+    };
+
+    loadHero();
+
+    return () => { mounted = false; };
+  }, []);
+
+  // Auto-advance slider with pause on hover
+  useEffect(() => {
+    if (!useSlider || !heroImages || heroImages.length <= 1) return;
+    if (paused) return undefined;
+    const t = setInterval(() => {
+      setActiveIdx(i => (i + 1) % heroImages.length);
+    }, 4000);
+    return () => clearInterval(t);
+  }, [heroImages, useSlider, paused]);
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#042d3e] via-[#074E67] to-[#05878A]">
@@ -98,31 +150,77 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Right */}
+        {/* Right - hero: show slider only when admin images exist; otherwise show default design */}
         <div className="flex-1">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="hidden sm:block">
-              <img
-                src={heroImageOne}
-                alt="Gemstone"
-                className="h-72 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
-              />
+          {useSlider ? (
+            <div
+              className="relative w-full"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+            >
+              <div ref={sliderRef} className="overflow-hidden rounded-2xl">
+                <div
+                  className="transition-transform duration-700"
+                  style={{ display: 'flex', transform: `translateX(-${activeIdx * 100}%)` }}
+                >
+                  {heroImages.map((img, idx) => (
+                    <div key={idx} style={{ height: 320, flex: '0 0 100%' }} className="w-full">
+                      <img
+                        src={img.url}
+                        alt={`hero-${idx}`}
+                        className="h-full w-full object-cover shadow-2xl ring-1 ring-white/10"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Horizontal dots (bottom-right) */}
+              <div className="absolute right-3 bottom-3 flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center">
+                  <div className="flex flex-col">
+                    {/* keep vertical stacking but visually small */}
+                  </div>
+                </div>
+              </div>
+
+              {/* Centered bottom dots */}
+              <div className="absolute left-1/2 bottom-4 -translate-x-1/2 flex items-center gap-2">
+                {heroImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveIdx(i)}
+                    className={`w-3 h-3 rounded-full transition-all ${i === activeIdx ? 'bg-white scale-110' : 'bg-white/40'}`}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="hidden sm:block">
-              <img
-                src={heroImageTwo}
-                alt="Gemstone research"
-                className="h-72 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
-              />
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="hidden sm:block">
+                <img
+                  src={heroImageOne}
+                  alt="Gemstone"
+                  className="h-72 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
+                />
+              </div>
+              <div className="hidden sm:block">
+                <img
+                  src={heroImageTwo}
+                  alt="Gemstone research"
+                  className="h-72 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
+                />
+              </div>
+              <div className="col-span-2">
+                <img
+                  src={heroImageThree}
+                  alt="Gem mining"
+                  className="h-52 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
+                />
+              </div>
             </div>
-            <div className="col-span-2">
-              <img
-                src={heroImageThree}
-                alt="Gem mining"
-                className="h-52 w-full rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:scale-[1.02]"
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

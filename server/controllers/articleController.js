@@ -16,9 +16,22 @@ const uploadImageToCloudinary = (buffer, folder = 'gemtalk/articles') => {
   });
 };
 
-const deleteCloudinaryImage = async (publicId) => {
+const uploadRawToCloudinary = (buffer, folder = 'gemtalk/articles/pdfs') => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'raw' },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+const deleteCloudinaryImage = async (publicId, resourceType = 'image') => {
   if (!publicId) return;
-  try { await cloudinary.uploader.destroy(publicId); } catch (e) { console.log('Cloudinary delete error:', e.message); }
+  try { await cloudinary.uploader.destroy(publicId, { resource_type: resourceType }); } catch (e) { console.log('Cloudinary delete error:', e.message); }
 };
 
 const deleteLocalFile = (filePath) => {
@@ -76,6 +89,7 @@ exports.createArticle = async (req, res) => {
   const pdfFile   = req.files?.pdf?.[0];
   const imageFile = req.files?.image?.[0];
   let imageUrl = null, imagePublicId = null;
+  let pdfUrl = null, pdfPublicId = null;
 
   try {
     const { title, description, type = 'news' } = req.body;
@@ -97,10 +111,26 @@ exports.createArticle = async (req, res) => {
       imagePublicId = result.public_id;
     }
 
+    // Upload PDF to Cloudinary (raw) if provided
+    if (pdfFile) {
+      const localPath = path.join(__dirname, '../uploads/articles', pdfFile.filename);
+      const buffer = fs.readFileSync(localPath);
+      try {
+        const r = await uploadRawToCloudinary(buffer);
+        pdfUrl = r.secure_url;
+        pdfPublicId = r.public_id;
+      } catch (err) {
+        deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+        throw err;
+      }
+      deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+    }
+
     const article = await Article.create({
       title,
       description,
-      pdf:           pdfFile ? `/uploads/articles/${pdfFile.filename}` : null,
+      pdf:           pdfFile ? pdfUrl : null,
+      pdfPublicId:   pdfFile ? pdfPublicId : null,
       fileName:      pdfFile ? pdfFile.originalname : null,
       fileSize:      pdfFile ? pdfFile.size : null,
       image:         imageUrl,
@@ -113,6 +143,7 @@ exports.createArticle = async (req, res) => {
     res.status(201).json({ success: true, data: article });
   } catch (error) {
     if (pdfFile) deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+    if (pdfPublicId) await deleteCloudinaryImage(pdfPublicId, 'raw');
     if (imagePublicId) await deleteCloudinaryImage(imagePublicId);
     res.status(500).json({ success: false, message: error.message });
   }
@@ -140,10 +171,15 @@ exports.updateArticle = async (req, res) => {
     if (req.body.publishedDate !== undefined) article.publishedDate = req.body.publishedDate ? new Date(req.body.publishedDate) : null;
 
     if (pdfFile) {
-      deleteLocalFile(article.pdf);
-      article.pdf      = `/uploads/articles/${pdfFile.filename}`;
+      if (article.pdfPublicId) await deleteCloudinaryImage(article.pdfPublicId, 'raw');
+      const localPath = path.join(__dirname, '../uploads/articles', pdfFile.filename);
+      const buffer = fs.readFileSync(localPath);
+      const r = await uploadRawToCloudinary(buffer);
+      article.pdf = r.secure_url;
+      article.pdfPublicId = r.public_id;
       article.fileName = pdfFile.originalname;
       article.fileSize = pdfFile.size;
+      deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
     }
 
     if (imageFile?.buffer) {
@@ -169,6 +205,7 @@ exports.deleteArticle = async (req, res) => {
     if (article.admin.toString() !== req.user.id) return res.status(403).json({ success: false, message: 'Not authorized' });
 
     deleteLocalFile(article.pdf);
+    if (article.pdfPublicId) await deleteCloudinaryImage(article.pdfPublicId, 'raw');
     await deleteCloudinaryImage(article.imagePublicId);
     await Article.findByIdAndDelete(req.params.id);
 
@@ -187,6 +224,7 @@ exports.bulkDeleteArticles = async (req, res) => {
     const articles = await Article.find({ _id: { $in: ids }, admin: req.user.id });
     for (const a of articles) {
       deleteLocalFile(a.pdf);
+      if (a.pdfPublicId) await deleteCloudinaryImage(a.pdfPublicId, 'raw');
       await deleteCloudinaryImage(a.imagePublicId);
     }
     await Article.deleteMany({ _id: { $in: ids }, admin: req.user.id });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getArticles, deleteArticle, bulkDeleteArticles } from '../services/api';
+import { getArticles, deleteArticle, bulkDeleteArticles, API_BASE_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import EditArticleModal from '../components/EditArticleModal';
 import Toast from '../components/Toast';
@@ -136,6 +136,36 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
   const label = defaultType === 'news' ? 'news article' : defaultType === 'research' ? 'research paper' : 'article';
   const labelPlural = defaultType === 'news' ? 'news articles' : defaultType === 'research' ? 'research papers' : 'articles';
 
+  const handleViewPdf = (url) => {
+    if (!url) return;
+    const resolved = url.startsWith('/') ? `${API_BASE_URL.replace(/\/api$/,'')}${url}` : url;
+    window.open(resolved, '_blank', 'noopener');
+  };
+
+  const handleDownloadPdf = (url, fileName) => {
+    if (!url) return;
+    const resolved = url.startsWith('/') ? `${API_BASE_URL.replace(/\/api$/,'')}${url}` : url;
+    (async () => {
+      try {
+        const res = await fetch(resolved, { mode: 'cors' });
+        if (!res.ok) throw new Error('Failed to fetch file');
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName || '';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        console.error('Download error', err);
+        // fallback: open in new tab
+        window.open(resolved, '_blank', 'noopener');
+      }
+    })();
+  };
+
   /* Single delete */
   const handleDelete = async (id) => {
     if (!window.confirm(`Are you sure you want to delete this ${label}?`)) return;
@@ -208,12 +238,15 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
           </td>
           <td className="actions-cell">
             {article.pdf ? (
-              <button className="act-btn act-view" onClick={() => window.open(`http://localhost:5000${article.pdf}`, '_blank')}>View</button>
-            ) : (
-              <button className="act-btn" disabled>No PDF</button>
-            )}
-            <button className="act-btn act-edit"   onClick={() => setEditingArticle(article)}>Edit</button>
-            <button className="act-btn act-delete" onClick={() => handleDelete(article._id)}>Delete</button>
+                <>
+                  <button type="button" className="act-btn act-view" onClick={() => handleViewPdf(article.pdf)}>View</button>
+                  <button type="button" className="act-btn" onClick={() => handleDownloadPdf(article.pdf, article.fileName)}>Download</button>
+                </>
+              ) : (
+                <button className="act-btn" disabled>No PDF</button>
+              )}
+            <button type="button" className="act-btn act-edit"   onClick={() => setEditingArticle(article)}>Edit</button>
+            <button type="button" className="act-btn act-delete" onClick={() => handleDelete(article._id)}>Delete</button>
           </td>
         </tr>
         {isExpanded && (
@@ -278,7 +311,10 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
 
         <div className="article-card-actions">
           {article.pdf ? (
-            <button className="act-btn act-view" onClick={() => window.open(`http://localhost:5000${article.pdf}`, '_blank')}>View</button>
+            <>
+              <button className="act-btn act-view" onClick={() => handleViewPdf(article.pdf)}>View</button>
+              <button className="act-btn" onClick={() => handleDownloadPdf(article.pdf, article.fileName)}>Download</button>
+            </>
           ) : (
             <button className="act-btn" disabled>No PDF</button>
           )}

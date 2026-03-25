@@ -45,3 +45,12 @@ export const getPublicArticleById = async (id, type = "article") => {
 };
 
 export const getPublicFileUrl = (path) => buildFileUrl(path);
+
+export const getHero = async () => {
+  const response = await fetch(buildPublicUrl(`/hero`));
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to load hero' }));
+    throw error;
+  }
+  return await response.json();
+};

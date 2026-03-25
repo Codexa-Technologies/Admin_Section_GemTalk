@@ -29,6 +29,9 @@ app.use('/api/questions', require('./routes/questionRoutes'));
 // Public routes (no authentication required)
 app.use('/api/public/articles', require('./routes/publicArticleRoutes'));
 
+// Hero config (public + admin)
+app.use('/api/hero', require('./routes/heroRoutes'));
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({ success: true, message: 'Server is running' });

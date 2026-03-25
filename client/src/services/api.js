@@ -1,4 +1,7 @@
-const API_BASE_URL = "https://adminsectiongemtalk-production-9414.up.railway.app/api";
+// Allow overriding the backend base URL at build/runtime via REACT_APP_API_URL.
+// If not provided, default to localhost for local development.
+const envBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+export const API_BASE_URL = `${envBase.replace(/\/+$/,'')}/api`;
 
 const getContentBasePath = (contentType = 'article') => {
   if (contentType === 'news') return 'news';
@@ -138,6 +141,32 @@ export const deleteArticle = async (token, id, contentType = 'article') => {
     throw error;
   }
 
+  return await response.json();
+};
+
+// Hero management (public + admin)
+export const getHero = async () => {
+  const response = await fetch(`${API_BASE_URL}/hero`);
+  if (!response.ok) { const error = await response.json(); throw error; }
+  return await response.json();
+};
+
+export const uploadHeroImage = async (token, formData) => {
+  const response = await fetch(`${API_BASE_URL}/hero`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  if (!response.ok) { const error = await response.json(); throw error; }
+  return await response.json();
+};
+
+export const deleteHeroImage = async (token, publicId) => {
+  const response = await fetch(`${API_BASE_URL}/hero/${encodeURIComponent(publicId)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) { const error = await response.json(); throw error; }
   return await response.json();
 };
 

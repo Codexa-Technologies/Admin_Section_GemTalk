@@ -5,6 +5,7 @@ const researchSchema = new mongoose.Schema(
     title:        { type: String, required: true, trim: true, maxlength: 100 },
     description:  { type: String, required: true, maxlength: 500 },
     pdf:          { type: String, required: true },
+    pdfPublicId:  { type: String, default: null },
     fileName:     { type: String, required: true },
     fileSize:     { type: Number },
     image:        { type: String, default: null },

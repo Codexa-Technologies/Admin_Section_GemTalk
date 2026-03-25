@@ -12,9 +12,18 @@ const uploadImageToCloudinary = (buffer, folder) =>
     stream.end(buffer);
   });
 
-const deleteCloudinaryImage = async (publicId) => {
+const uploadRawToCloudinary = (buffer, folder) =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'raw' },
+      (err, result) => (err ? reject(err) : resolve(result))
+    );
+    stream.end(buffer);
+  });
+
+const deleteCloudinaryImage = async (publicId, resourceType = 'image') => {
   if (!publicId) return;
-  try { await cloudinary.uploader.destroy(publicId); } catch (e) { console.log('Cloudinary delete error:', e.message); }
+  try { await cloudinary.uploader.destroy(publicId, { resource_type: resourceType }); } catch (e) { console.log('Cloudinary delete error:', e.message); }
 };
 
 const deleteLocalFile = (filePath) => {
@@ -121,9 +130,19 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
         admin: req.user.id,
       };
       if (hasPdf && pdfFile) {
-        doc.pdf      = `/uploads/articles/${pdfFile.filename}`;
+        const localPath = path.join(__dirname, '../uploads/articles', pdfFile.filename);
+        const buffer = fs.readFileSync(localPath);
+        try {
+          const r = await uploadRawToCloudinary(buffer, `${folder}/pdfs`);
+          doc.pdf = r.secure_url;
+          doc.pdfPublicId = r.public_id;
+        } catch (err) {
+          deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
+          throw err;
+        }
         doc.fileName = pdfFile.originalname;
         doc.fileSize = pdfFile.size;
+        deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
       }
 
       const item = await Model.create(doc);
@@ -160,10 +179,15 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       if (req.body.downloadAvailable !== undefined) item.downloadAvailable = req.body.downloadAvailable === 'true' || req.body.downloadAvailable === true;
 
       if (hasPdf && pdfFile) {
-        deleteLocalFile(item.pdf);
-        item.pdf      = `/uploads/articles/${pdfFile.filename}`;
+        if (item.pdfPublicId) await deleteCloudinaryImage(item.pdfPublicId, 'raw');
+        const localPath = path.join(__dirname, '../uploads/articles', pdfFile.filename);
+        const buffer = fs.readFileSync(localPath);
+        const r = await uploadRawToCloudinary(buffer, `${folder}/pdfs`);
+        item.pdf = r.secure_url;
+        item.pdfPublicId = r.public_id;
         item.fileName = pdfFile.originalname;
         item.fileSize = pdfFile.size;
+        deleteLocalFile(`/uploads/articles/${pdfFile.filename}`);
       }
       if (hasImage && imageFile?.buffer) {
         await deleteCloudinaryImage(item.imagePublicId);
@@ -213,6 +237,7 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       if (item.admin.toString() !== req.user.id) return res.status(403).json({ success: false, message: 'Not authorized' });
 
       if (hasPdf) deleteLocalFile(item.pdf);
+      if (item.pdfPublicId) await deleteCloudinaryImage(item.pdfPublicId, 'raw');
       await deleteCloudinaryImage(item.imagePublicId);
       if (Array.isArray(item.images)) {
         for (const img of item.images) {
@@ -231,6 +256,7 @@ const createController = (Model, { hasPdf = true, hasImage = true, imageRequired
       const items = await Model.find({ _id: { $in: ids }, admin: req.user.id });
       for (const item of items) {
         if (hasPdf) deleteLocalFile(item.pdf);
+        if (item.pdfPublicId) await deleteCloudinaryImage(item.pdfPublicId, 'raw');
         await deleteCloudinaryImage(item.imagePublicId);
       }
       await Model.deleteMany({ _id: { $in: ids }, admin: req.user.id });
