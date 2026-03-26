@@ -136,14 +136,14 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
   const label = defaultType === 'news' ? 'news article' : defaultType === 'research' ? 'research paper' : 'article';
   const labelPlural = defaultType === 'news' ? 'news articles' : defaultType === 'research' ? 'research papers' : 'articles';
 
-  const handleViewPdf = (url) => {
+  const handleViewPdf = async (url) => {
     if (!url) return;
-    // Open the PDF via the server proxy so the server can force `Content-Disposition: inline`.
-    try {
-      const proxyUrl = `${API_BASE_URL}/public/file?url=${encodeURIComponent(url)}`;
-      window.open(proxyUrl, '_blank', 'noopener');
-    } catch (e) {
-      // Fallback: open the original URL
+
+    // Open the proxy URL directly in a new tab (same as pasting the proxy URL in browser).
+    const proxyUrl = `${API_BASE_URL}/public/file?url=${encodeURIComponent(url)}`;
+    const opened = window.open(proxyUrl, '_blank', 'noopener');
+    if (!opened) {
+      // Popup blocked — fallback to opening the original URL
       window.open(url, '_blank', 'noopener');
     }
   };

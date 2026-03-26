@@ -221,14 +221,13 @@ export default function ResearchPage() {
 
                 <div className="mt-6 flex flex-wrap gap-4">
                   {selectedResearch.pdf && (
-                    <a
-                      href={getPublicFileUrl(selectedResearch.pdf)}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => window.open(getPublicFileUrl(selectedResearch.pdf), '_blank', 'noopener')}
                       className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]"
                     >
                       View PDF
-                    </a>
+                    </button>
                   )}
                   {selectedResearch.pdf && selectedResearch.downloadAvailable !== false ? (
                     <button
