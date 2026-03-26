@@ -17,7 +17,7 @@ export default function LastSec() {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-7xl px-6">
-        <h3 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Find Your Brithstone</h3>
+        <h3 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Find Your <span className="text-[#1e95b5]">BirthStone</span></h3>
       </div>
 
       <div className="mt-10 overflow-hidden">
@@ -42,7 +42,7 @@ export default function LastSec() {
         .lastsec-track {
           display: flex;
           width: max-content;
-          animation: lastsec-scroll 30s linear infinite;
+          animation: lastsec-scroll 120s linear infinite;
           will-change: transform;
         }
         .lastsec-row {
