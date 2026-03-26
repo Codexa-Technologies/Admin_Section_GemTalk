@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const newsSchema = new mongoose.Schema(
   {
     title:        { type: String, required: true, trim: true, maxlength: 100 },
-    description:  { type: String, required: true, maxlength: 500 },
+    description:  { type: String, required: true, maxlength: 3000 },
     // type: 'news' or 'event'
     type:         { type: String, enum: ['news', 'event'], default: 'news' },
     // single cover image for news

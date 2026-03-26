@@ -150,8 +150,17 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
     setError(''); setSuccess('');
 
     if (!formData.title || !formData.description) { setError('Please fill in all fields'); return; }
+
     const descWords = getWordCount(formData.description);
-    if (descWords > 700) { setError('Description must be 700 words or fewer'); return; }
+    if (isNews) {
+      if ((formData.description || '').length > 2500) {
+        setError('Description must be 2500 characters or fewer');
+        return;
+      }
+    } else if (descWords > 700) {
+      setError('Description must be 700 words or fewer');
+      return;
+    }
     if (!isNews && !formData.pdf) { setError('Please upload a PDF file'); return; }
     if (isNews) {
       if (formData.type === 'news' && !formData.image) { setError('Please upload a cover image'); return; }
@@ -227,10 +236,21 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
           {/* Description */}
           <div className="field">
             <label htmlFor="description">{isResearch ? 'Abstract / Summary' : 'Description'}</label>
-            <span className="char-count">{descriptionWordCount}/700 words</span>
-            <textarea id="description" name="description" value={formData.description} onChange={handleInput}
-              placeholder={isResearch ? 'Enter abstract or summary' : isNews ? 'Enter a brief description' : 'Enter article description'}
-              required disabled={loading} rows="4" />
+            <span className="char-count">
+              {isNews
+                ? `${(formData.description || '').length}/2500 characters`
+                : `${descriptionWordCount}/700 words`}
+            </span>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInput}
+              placeholder={isResearch ? 'Enter abstract or summary' : isNews ? 'Enter news content (can include multiple paragraphs)' : 'Enter article description'}
+              required
+              disabled={loading}
+              rows={isNews ? 8 : 4}
+            />
           </div>
 
           {/* Published Date */}

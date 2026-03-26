@@ -196,21 +196,6 @@ export default function LatestArticles() {
                       href={getPublicFileUrl(selectedArticle.pdf)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        const url = getPublicFileUrl(selectedArticle.pdf);
-                        try {
-                          const resp = await fetch(url, { method: 'GET' });
-                          if (!resp.ok) throw new Error('Failed to fetch PDF');
-                          const blob = await resp.blob();
-                          const objectUrl = URL.createObjectURL(blob);
-                          window.open(objectUrl, '_blank', 'noopener');
-                          // revoke after a delay to allow the new tab to load
-                          setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
-                        } catch (err) {
-                          setModalError(err?.message || 'Unable to open PDF');
-                        }
-                      }}
                       className="rounded-md bg-[#1e95b5] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#167d97]"
                     >
                       View PDF
