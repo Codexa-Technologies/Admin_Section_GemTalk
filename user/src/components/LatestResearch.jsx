@@ -10,12 +10,11 @@ function ResearchCard({ item, onOpen }) {
       onClick={onOpen}
       className="group relative w-full overflow-hidden rounded-3xl bg-white text-left shadow-lg transition-transform duration-200 hover:-translate-y-1"
     >
-      <div className="h-48 w-full">
-        <img
-          src={item.image}
-          alt={item.title}
-          className="h-full w-full object-cover"
-        />
+      <div className="h-48 w-full relative">
+        <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-150 pointer-events-none">
+          <span className="opacity-0 group-hover:opacity-100 bg-white text-[#1e95b5] px-4 py-2 rounded-full font-semibold shadow">View</span>
+        </div>
       </div>
       <div className="p-5">
         <p className="text-xs font-semibold text-[#1e95b5]">{item.date}</p>

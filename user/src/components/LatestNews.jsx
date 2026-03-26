@@ -5,15 +5,21 @@ import placeholderImage from "../assets/HeroSection1.webp";
 
 function NewsCard({ item }) {
   return (
-    <div className="w-72 shrink-0 overflow-hidden rounded-3xl bg-white shadow-lg">
-      <div className="h-32 w-full">
+    <Link
+      to={`/news/${item._id || ''}`}
+      className="group relative w-72 shrink-0 overflow-hidden rounded-3xl bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1"
+    >
+      <div className="h-32 w-full relative">
         <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-150 pointer-events-none">
+          <span className="opacity-0 group-hover:opacity-100 bg-white text-[#1e95b5] px-4 py-2 rounded-full font-semibold shadow">View</span>
+        </div>
       </div>
       <div className="p-4">
         <p className="text-xs font-semibold text-[#1e95b5]">{item.date}</p>
         <h3 className="mt-2 text-base font-bold text-gray-900">{item.title}</h3>
       </div>
-    </div>
+    </Link>
   );
 }
 

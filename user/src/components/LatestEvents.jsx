@@ -5,42 +5,25 @@ import placeholderImage from "../assets/HeroSection1.webp";
 
 function EventCard({ item, onView }) {
   return (
-    <div className="overflow-hidden rounded-3xl bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1">
-      <div className="h-48 w-full">
-        <img
-          src={item.image}
-          alt={item.title}
-          className="h-full w-full object-cover"
-        />
+    <button
+      type="button"
+      onClick={onView}
+      className="group relative overflow-hidden rounded-3xl bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1"
+    >
+      <div className="h-48 w-full relative">
+        <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-150 pointer-events-none">
+          <span className="opacity-0 group-hover:opacity-100 bg-white text-[#1e95b5] px-4 py-2 rounded-full font-semibold shadow">View</span>
+        </div>
       </div>
       <div className="p-5">
         <p className="text-xs font-semibold text-[#1e95b5]">{item.date}</p>
         <h3 className="mt-2 text-lg font-bold text-gray-900">{item.title}</h3>
         {item.description && (
-          <div className="mt-2 flex items-center justify-between gap-4">
-            <p className="text-sm text-gray-600 line-clamp-1">{item.description}</p>
-            <button
-              type="button"
-              onClick={onView}
-              className="shrink-0 rounded-xl border border-[#1e95b5] px-4 py-2 text-sm font-semibold text-[#1e95b5] transition-colors hover:bg-[#1e95b5] hover:text-white"
-            >
-              View
-            </button>
-          </div>
-        )}
-        {!item.description && (
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={onView}
-              className="inline-flex items-center justify-center rounded-xl border border-[#1e95b5] px-4 py-2 text-sm font-semibold text-[#1e95b5] transition-colors hover:bg-[#1e95b5] hover:text-white"
-            >
-              View
-            </button>
-          </div>
+          <p className="mt-2 text-sm text-gray-600 line-clamp-1">{item.description}</p>
         )}
       </div>
-    </div>
+    </button>
   );
 }
 

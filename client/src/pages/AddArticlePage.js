@@ -39,6 +39,10 @@ const formatBytes = (bytes) => {
   return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(bytes / 1024).toFixed(1)} KB`;
 };
 
+const getWordCount = (text) => {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
+};
 // Pdf preview removed to avoid worker/import issues
 
 const getInitialFormData = () => {
@@ -61,6 +65,7 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
   const contentType = isNews ? 'news' : isResearch ? 'research' : 'article';
 
   const [formData, setFormData] = useState(() => getInitialFormData());
+  const [descriptionWordCount, setDescriptionWordCount] = useState(0);
   const imagesInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError]       = useState('');
@@ -81,7 +86,15 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
     if (imagesInputRef.current) imagesInputRef.current.value = '';
   }, [contentType]);
 
-  const handleInput = e => setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
+  const handleInput = e => {
+    const { name, value } = e.target;
+    if (name === 'description') {
+      setFormData(p => ({ ...p, description: value }));
+      setDescriptionWordCount(getWordCount(value));
+      return;
+    }
+    setFormData(p => ({ ...p, [name]: value }));
+  };
 
   const handleCheckbox = e => setFormData(p => ({ ...p, [e.target.name]: e.target.checked }));
 
@@ -137,6 +150,8 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
     setError(''); setSuccess('');
 
     if (!formData.title || !formData.description) { setError('Please fill in all fields'); return; }
+    const descWords = getWordCount(formData.description);
+    if (descWords > 700) { setError('Description must be 700 words or fewer'); return; }
     if (!isNews && !formData.pdf) { setError('Please upload a PDF file'); return; }
     if (isNews) {
       if (formData.type === 'news' && !formData.image) { setError('Please upload a cover image'); return; }
@@ -212,10 +227,10 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
           {/* Description */}
           <div className="field">
             <label htmlFor="description">{isResearch ? 'Abstract / Summary' : 'Description'}</label>
-            <span className="char-count">{formData.description.length}/500</span>
+            <span className="char-count">{descriptionWordCount}/700 words</span>
             <textarea id="description" name="description" value={formData.description} onChange={handleInput}
               placeholder={isResearch ? 'Enter abstract or summary' : isNews ? 'Enter a brief description' : 'Enter article description'}
-              required disabled={loading} maxLength="500" rows="4" />
+              required disabled={loading} rows="4" />
           </div>
 
           {/* Published Date */}
@@ -350,7 +365,7 @@ const AddArticlePage = ({ defaultType = 'article' }) => {
             <button type="button" className="btn-secondary"
               onClick={() => navigate(isResearch ? '/manage-research' : isNews ? '/manage-news' : '/manage-articles')}
               disabled={loading}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={loading}>
+            <button type="submit" className="btn-primary" disabled={loading || descriptionWordCount > 700}>
               {loading ? 'Saving...' : isResearch ? 'Add Research Paper' : isNews ? 'Add News Article' : 'Add Article'}
             </button>
           </div>
