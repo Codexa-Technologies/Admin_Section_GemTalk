@@ -22,14 +22,16 @@ function NewsCard({ item, onOpen }) {
         <h3 className="mt-2 text-lg font-bold text-gray-900 group-hover:text-[#1e95b5]">
           {item.title}
         </h3>
-        {item.description && (
-          <p className="mt-2 text-sm text-gray-600 line-clamp-1">
-            {item.description}
-          </p>
-        )}
-        <span className="absolute bottom-5 right-5 text-sm font-semibold text-[#1e95b5]">
-          View
-        </span>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          {item.description && (
+            <p className="flex-1 text-sm text-gray-600 line-clamp-2">
+              {item.description}
+            </p>
+          )}
+          <span className="shrink-0 text-sm font-semibold text-[#1e95b5]">
+            View
+          </span>
+        </div>
       </div>
     </button>
   );
@@ -46,6 +48,7 @@ export default function NewsPage() {
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
   const [search, setSearch] = useState("");
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -88,6 +91,7 @@ export default function NewsPage() {
     try {
       setModalLoading(true);
       setModalError("");
+      setIsDescriptionExpanded(false);
       const response = await getPublicArticleById(id, "news");
       setSelectedNews(response.data || null);
     } catch (err) {
@@ -102,6 +106,7 @@ export default function NewsPage() {
     setSelectedNews(null);
     setModalError("");
     setModalLoading(false);
+    setIsDescriptionExpanded(false);
   };
 
   return (
@@ -166,7 +171,7 @@ export default function NewsPage() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-xl">
+          <div className="w-full max-w-3xl max-h-[80vh] overflow-hidden rounded-3xl bg-white shadow-xl flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
               <h3 className="text-lg font-semibold text-gray-900">News Details</h3>
               <button
@@ -179,28 +184,43 @@ export default function NewsPage() {
               </button>
             </div>
 
-            {modalLoading ? (
-              <div className="px-6 py-8 text-sm text-slate-500">Loading news...</div>
-            ) : modalError ? (
-              <div className="px-6 py-8 text-sm text-red-500">{modalError}</div>
-            ) : selectedNews ? (
-              <div className="px-6 py-6">
-                <img
-                  src={selectedNews.image || placeholderImage}
-                  alt={selectedNews.title}
-                  className="h-72 w-full rounded-2xl object-cover"
-                />
-                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#1e95b5]">
-                  {formatDate(selectedNews.publishedDate || selectedNews.createdAt)}
-                </p>
-                <h4 className="mt-2 text-2xl font-extrabold text-gray-900">
-                  {selectedNews.title}
-                </h4>
-                <p className="mt-4 text-base leading-7 text-gray-600">
-                  {selectedNews.description}
-                </p>
-              </div>
-            ) : null}
+            <div className="flex-1 overflow-y-auto">
+              {modalLoading ? (
+                <div className="px-6 py-8 text-sm text-slate-500">Loading news...</div>
+              ) : modalError ? (
+                <div className="px-6 py-8 text-sm text-red-500">{modalError}</div>
+              ) : selectedNews ? (
+                <div className="px-6 py-6">
+                  <img
+                    src={selectedNews.image || placeholderImage}
+                    alt={selectedNews.title}
+                    className="h-72 w-full rounded-2xl object-cover"
+                  />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#1e95b5]">
+                    {formatDate(selectedNews.publishedDate || selectedNews.createdAt)}
+                  </p>
+                  <h4 className="mt-2 text-2xl font-extrabold text-gray-900">
+                    {selectedNews.title}
+                  </h4>
+                  <p
+                    className={`mt-4 text-base leading-7 text-gray-600 whitespace-pre-line ${
+                      isDescriptionExpanded ? "" : "line-clamp-5"
+                    }`}
+                  >
+                    {selectedNews.description}
+                  </p>
+                  {selectedNews.description && selectedNews.description.length > 400 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                      className="mt-2 text-sm font-semibold text-[#1e95b5] hover:underline"
+                    >
+                      {isDescriptionExpanded ? "See less" : "See more"}
+                    </button>
+                  )}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       )}

@@ -22,14 +22,16 @@ function ResearchCard({ item, onOpen }) {
         <h3 className="mt-2 text-lg font-bold text-gray-900 group-hover:text-[#1e95b5]">
           {item.title}
         </h3>
-        {item.description && (
-          <p className="mt-2 text-sm text-gray-600 line-clamp-1">
-            {item.description}
-          </p>
-        )}
-        <span className="absolute bottom-5 right-5 text-sm font-semibold text-[#1e95b5]">
-          Read
-        </span>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          {item.description && (
+            <p className="flex-1 text-sm text-gray-600 line-clamp-2">
+              {item.description}
+            </p>
+          )}
+          <span className="shrink-0 text-sm font-semibold text-[#1e95b5]">
+            Read
+          </span>
+        </div>
       </div>
     </button>
   );

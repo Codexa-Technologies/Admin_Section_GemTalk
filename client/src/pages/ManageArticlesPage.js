@@ -428,6 +428,7 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
       {editingArticle && (
         <EditArticleModal
           article={editingArticle}
+          contentType={defaultType || 'article'}
           onClose={() => setEditingArticle(null)}
           onSuccess={() => { setEditingArticle(null); fetchArticles(); }}
         />

@@ -12,16 +12,17 @@ const TrashIcon = () => (
   </svg>
 );
 
-const EditArticleModal = ({ article, onClose, onSuccess }) => {
-  const isNews     = article.type === 'news';
-  const isResearch = article.type === 'research';
+const EditArticleModal = ({ article, onClose, onSuccess, contentType }) => {
+  const resolvedType = article.type || contentType || 'article';
+  const isNews     = resolvedType === 'news';
+  const isResearch = resolvedType === 'research';
 
   const [formData, setFormData] = useState({
     title: article.title,
     description: article.description,
     pdf: null,
     image: null,
-    type: article.type || 'news',
+    type: resolvedType,
   });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -58,7 +59,7 @@ const EditArticleModal = ({ article, onClose, onSuccess }) => {
       data.append('description', formData.description);
       if (formData.pdf)   data.append('pdf', formData.pdf);
       if (formData.image) data.append('image', formData.image);
-      const res = await updateArticle(token, article._id, data, article.type || 'article');
+      const res = await updateArticle(token, article._id, data, resolvedType || 'article');
       if (res.success) onSuccess();
       else setError(res.message || 'Failed to update');
     } catch (err) {

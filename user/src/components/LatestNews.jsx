@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPublicArticles } from "../services/publicApi";
+import { getPublicArticles, getPublicArticleById } from "../services/publicApi";
 import placeholderImage from "../assets/HeroSection1.webp";
 
-function NewsCard({ item }) {
+function NewsCard({ item, onView }) {
   return (
-    <Link
-      to={`/news/${item._id || ''}`}
+    <button
+      type="button"
+      onClick={onView}
       className="group relative w-72 shrink-0 overflow-hidden rounded-3xl bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1"
     >
       <div className="h-32 w-full relative">
@@ -19,7 +20,7 @@ function NewsCard({ item }) {
         <p className="text-xs font-semibold text-[#1e95b5]">{item.date}</p>
         <h3 className="mt-2 text-base font-bold text-gray-900">{item.title}</h3>
       </div>
-    </Link>
+    </button>
   );
 }
 
@@ -27,6 +28,10 @@ export default function LatestNews() {
   const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedNews, setSelectedNews] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState("");
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -69,6 +74,29 @@ export default function LatestNews() {
   }));
   const shouldScroll = displayItems.length >= 4;
 
+  const openNews = async (id) => {
+    if (!id) return;
+    try {
+      setModalLoading(true);
+      setModalError("");
+      setIsDescriptionExpanded(false);
+      const response = await getPublicArticleById(id, "news");
+      setSelectedNews(response.data || null);
+    } catch (err) {
+      setModalError(err?.message || "Failed to load news");
+      setSelectedNews(null);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedNews(null);
+    setModalError("");
+    setModalLoading(false);
+    setIsDescriptionExpanded(false);
+  };
+
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-7xl px-6">
@@ -95,12 +123,20 @@ export default function LatestNews() {
             <div className="news-track">
               <div className="news-row">
                 {displayItems.map((item) => (
-                  <NewsCard key={`news-${item._id || item.title}`} item={item} />
+                  <NewsCard
+                    key={`news-${item._id || item.title}`}
+                    item={item}
+                    onView={() => openNews(item._id)}
+                  />
                 ))}
               </div>
               <div className="news-row" aria-hidden="true">
                 {displayItems.map((item) => (
-                  <NewsCard key={`news-dup-${item._id || item.title}`} item={item} />
+                  <NewsCard
+                    key={`news-dup-${item._id || item.title}`}
+                    item={item}
+                    onView={() => openNews(item._id)}
+                  />
                 ))}
               </div>
             </div>
@@ -108,11 +144,73 @@ export default function LatestNews() {
         ) : (
           <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {displayItems.map((item) => (
-              <NewsCard key={`news-${item._id || item.title}`} item={item} />
+              <NewsCard
+                key={`news-${item._id || item.title}`}
+                item={item}
+                onView={() => openNews(item._id)}
+              />
             ))}
           </div>
         )}
       </div>
+      {(selectedNews || modalLoading || modalError) && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-3xl max-h-[80vh] overflow-hidden rounded-3xl bg-white shadow-xl flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-lg font-semibold text-gray-900">News Details</h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {modalLoading ? (
+                <div className="px-6 py-8 text-sm text-slate-500">Loading news...</div>
+              ) : modalError ? (
+                <div className="px-6 py-8 text-sm text-red-500">{modalError}</div>
+              ) : selectedNews ? (
+                <div className="px-6 py-6">
+                  <img
+                    src={selectedNews.image || placeholderImage}
+                    alt={selectedNews.title}
+                    className="h-72 w-full rounded-2xl object-cover"
+                  />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#1e95b5]">
+                    {formatDate(selectedNews.publishedDate || selectedNews.createdAt)}
+                  </p>
+                  <h4 className="mt-2 text-2xl font-extrabold text-gray-900">
+                    {selectedNews.title}
+                  </h4>
+                  <p
+                    className={`mt-4 text-base leading-7 text-gray-600 whitespace-pre-line ${
+                      isDescriptionExpanded ? "" : "line-clamp-5"
+                    }`}
+                  >
+                    {selectedNews.description}
+                  </p>
+                  {selectedNews.description && selectedNews.description.length > 400 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                      className="mt-2 text-sm font-semibold text-[#1e95b5] hover:underline"
+                    >
+                      {isDescriptionExpanded ? "See less" : "See more"}
+                    </button>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
       {shouldScroll && (
         <style>{`
           @keyframes news-scroll {
