@@ -11,39 +11,54 @@ import img10 from "../assets/lastsec/birth srones-10.jpg";
 import img11 from "../assets/lastsec/birth srones-11.jpg";
 import img12 from "../assets/lastsec/birth srones-12.jpg";
 
-const images = [
-  img1,
-  img2,
-  img3,
-  img4,
-  img5,
-  img6,
-  img7,
-  img8,
-  img9,
-  img10,
-  img11,
-  img12,
-];
+const images = [img1, img2, img3, img4, img5, img6, img7, img8, img9, img10, img11, img12];
 
 export default function LastSec() {
   return (
-    <section className="bg-white py-8">
+    <section className="bg-white py-16">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-extrabold text-gray-900">Find Your Brithstone</h3>
-        </div>
+        <h3 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Find Your Brithstone</h3>
+      </div>
 
-        <div className="mt-6">
-          <div className="flex gap-4 overflow-x-auto py-4">
-            {images.map((src, i) => (
-              <div key={i} className="flex-shrink-0 w-64 rounded-lg bg-slate-100">
-                <img src={src} alt={`gallery-${i}`} className="h-40 w-full object-cover rounded-lg" />
-              </div>
-            ))}
-          </div>
+      <div className="mt-10 overflow-hidden">
+        <div className="lastsec-track">
+          {[0, 1].map((copy) => (
+            <div key={copy} className="lastsec-row" aria-hidden={copy === 1 ? "true" : undefined}>
+              {images.map((src, i) => (
+                <div key={i} className="lastsec-card">
+                  <img src={src} alt={`birthstone-${i + 1}`} className="h-full w-full object-contain block" />
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
+
+      <style>{`
+        @keyframes lastsec-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .lastsec-track {
+          display: flex;
+          width: max-content;
+          animation: lastsec-scroll 30s linear infinite;
+          will-change: transform;
+        }
+        .lastsec-row {
+          display: flex;
+          gap: 1.5rem;
+          padding-right: 1.5rem;
+        }
+        .lastsec-card {
+          flex-shrink: 0;
+          width: 220px;
+          height: 336px;
+          border-radius: 1rem;
+          overflow: hidden;
+          background: #f1f5f9;
+        }
+      `}</style>
     </section>
   );
 }
