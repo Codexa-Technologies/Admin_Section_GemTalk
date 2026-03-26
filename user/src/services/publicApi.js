@@ -15,10 +15,10 @@ const API_BASE_URL =
     : 'https://adminsectiongemtalk-production-9414.up.railway.app') + '/api');
 
 const buildPublicUrl = (path) => `${API_BASE_URL}${path}`;
-const buildFileUrl = (path) => {
-  if (!path) return "";
-  return `${API_BASE_URL.replace(/\/api$/, "")}${path}`;
-};
+// const buildFileUrl = (path) => {
+//   if (!path) return "";
+//   return `${API_BASE_URL.replace(/\/api$/, "")}${path}`;
+// };
 
 export const getPublicArticles = async ({
   page = 1,

@@ -11,6 +11,7 @@ import FAQ from './components/FAQ';
 //import WebsiteScroller from './components/WebsiteScroller';
 import HelpCenter from './components/HelpCenter';
 import Footer from './components/Footer';
+import LastSec from './components/LastSec';
 import ArticlesPage from './pages/ArticlesPage';
 import ResearchPage from './pages/ResearchPage';
 import NewsPage from './pages/NewsPage';
@@ -27,6 +28,7 @@ function HomePage() {
       <LatestNews />
       <LatestEvents />
       <FAQ />
+        <LastSec />
     </>
   );
 }
