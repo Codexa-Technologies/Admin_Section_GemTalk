@@ -138,8 +138,14 @@ const ManageArticlesPage = ({ defaultType = '' }) => {
 
   const handleViewPdf = (url) => {
     if (!url) return;
-    const resolved = url.startsWith('/') ? `${API_BASE_URL.replace(/\/api$/,'')}${url}` : url;
-    window.open(resolved, '_blank', 'noopener');
+    // Open the PDF via the server proxy so the server can force `Content-Disposition: inline`.
+    try {
+      const proxyUrl = `${API_BASE_URL}/public/file?url=${encodeURIComponent(url)}`;
+      window.open(proxyUrl, '_blank', 'noopener');
+    } catch (e) {
+      // Fallback: open the original URL
+      window.open(url, '_blank', 'noopener');
+    }
   };
 
   

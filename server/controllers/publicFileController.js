@@ -29,7 +29,16 @@ const fetchAndPipe = (fileUrl, req, res, filename, maxRedirects = 5) => {
     }
 
     // Set content-type from upstream (fallback to octet-stream)
-    const contentType = upRes.headers['content-type'] || 'application/octet-stream';
+    let contentType = upRes.headers['content-type'] || 'application/octet-stream';
+
+    // Heuristic: if the URL or provided filename indicates a PDF (folder named 'pdfs' or .pdf extension),
+    // force the content-type to application/pdf so browsers open it inline instead of downloading.
+    const upstreamPath = parsed.pathname || '';
+    const filenameLower = (filename || '').toLowerCase();
+    if (upstreamPath.includes('/pdfs/') || upstreamPath.endsWith('.pdf') || filenameLower.endsWith('.pdf')) {
+      contentType = 'application/pdf';
+    }
+
     res.setHeader('Content-Type', contentType);
 
     // derive filename if not provided
