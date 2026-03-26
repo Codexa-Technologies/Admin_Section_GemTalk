@@ -31,7 +31,20 @@ export default function LastSec() {
               ))}
             </div>
           ))}
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-extrabold text-gray-900">Find Your <span className="text-[#1e95b5]">BirthStone</span></h3>
         </div>
+
+        <div className="mt-6">
+          <div className="flex gap-4 overflow-x-auto py-4">
+            {images.map((src, i) => (
+              <div key={i} className="flex-shrink-0 w-64 rounded-lg bg-slate-100">
+                <img src={src} alt={`gallery-${i}`} className="h-40 w-full object-cover rounded-lg" />
+              </div>
+            ))} 
+          </div>
+        </div>
+      </div>
       </div>
 
       <style>{`
@@ -60,5 +73,6 @@ export default function LastSec() {
         }
       `}</style>
     </section>
+    
   );
 }

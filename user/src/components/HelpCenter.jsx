@@ -21,19 +21,14 @@ export default function HelpCenter() {
             Let&apos;s Talk About Your Next Journey
           </h2>
           <p className="mt-4 text-base leading-7 text-[#b8dbe6]">
-            Chat with our team on WhatsApp for quick guidance, curated
-            experiences, or partnership inquiries. We respond fast and help
-            you plan the perfect visit. Share your goals, budget, and preferred
-            dates, and we will suggest the best options with clear next steps.
-            Our team can also assist with itinerary ideas, travel tips, and
-            local recommendations to make your experience smooth and memorable.
+            Chat with our team on WhatsApp for quick guidance, curated experiences, or partnership inquiries.  We respond quickly to your questions and help you understand your gemstones with confidence. Share your queries, and our experts will guide you with accurate information, practical advice, and clear answers. You can also connect with industry professionals, gain insights, and explore trusted knowledge to make better decisions in the gem world.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a
               href="https://wa.me/94766900767"
               target="_blank"
               rel="noreferrer"
-                className="inline-flex w-40 items-center justify-center gap-2 rounded-md bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#1da851]"
+              className="inline-flex w-40 items-center justify-center gap-2 rounded-md bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#1da851]"
             >
               WhatsApp Us
             </a>
@@ -50,4 +45,4 @@ export default function HelpCenter() {
   );
 }
 
-             
+
