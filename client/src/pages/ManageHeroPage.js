@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getHero, uploadHeroImage, deleteHeroImage, API_BASE_URL } from '../services/api';
+import { getHero,deleteHeroImage, API_BASE_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Toast from '../components/Toast';
 
